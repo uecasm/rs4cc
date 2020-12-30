@@ -1,0 +1,40 @@
+modLoader="javafml"
+loaderVersion="[35,)"
+license="MIT"
+issueTrackerURL="https://github.com/uecasm/rs4cc/issues"
+[[mods]]
+modId="refinedstorage4computercraft"
+version="${version}"
+displayName="RefinedStorage for ComputerCraft"
+updateJSONURL="https://raw.githubusercontent.com/uecasm/rs4cc/trunk/update.json"
+displayURL="https://github.com/uecasm/rs4cc"
+logoFile="logo.png"
+credits="Refined Storage and ComputerCraft"
+authors="Mirality"
+description='''
+This adds a "Refined Storage Peripheral" block that can be accessed as a ComputerCraft peripheral, allowing computers and turtles access to a wide range of functions in Refined Storage.
+'''
+[[dependencies.refinedstorage4computercraft]]
+    modId="forge"
+    mandatory=true
+    versionRange="[35,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.refinedstorage4computercraft]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.4,1.17)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.refinedstorage4computercraft]]
+    modId="refinedstorage"
+    mandatory=true
+    versionRange="[1.9.9,)"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.refinedstorage4computercraft]]
+    modId="computercraft"
+    mandatory=true
+    versionRange="[1.94.0,)"
+    ordering="AFTER"
+    side="BOTH"

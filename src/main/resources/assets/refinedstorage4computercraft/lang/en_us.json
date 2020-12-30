@@ -1,0 +1,6 @@
+{
+  "block.refinedstorage4computercraft.peripheral": "Refined Storage Peripheral",
+  "block.refinedstorage4computercraft.peripheral.ui": "CC Peripheral",
+  "advancements.refinedstorage4computercraft:peripheral": "Computer Interfacing",
+  "advancements.refinedstorage4computercraft:peripheral.description": "Craft a Refined Storage Peripheral, to access your RS system from ComputerCraft computers"
+}

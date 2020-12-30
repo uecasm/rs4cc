@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "connected=true": {
+      "model": "refinedstorage4computercraft:block/peripheral_connected"
+    },
+    "connected=false": {
+      "model": "refinedstorage4computercraft:block/peripheral_disconnected"
+    }
+  }
+}
