@@ -41,9 +41,6 @@ public final class RS4CC {
     public static final void commonSetup(FMLCommonSetupEvent e) {
         API.instance().getNetworkNodeRegistry().add(PeripheralNetworkNode.ID,
                 (tag, world, pos) -> readAndReturn(tag, new PeripheralNetworkNode(world, pos)));
-
-        LOGGER.info("Registering with ComputerCraft {}", ComputerCraftAPI.getInstalledVersion());
-        ComputerCraftAPI.registerPeripheralProvider(new RefinedStoragePeripheralProvider());
     }
 
     @SubscribeEvent

@@ -1,6 +1,5 @@
-package nz.co.mirality.refinedstorage4computercraft;
+package nz.co.mirality.refinedstorage4computercraft.util;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.refinedmods.refinedstorage.api.autocrafting.ICraftingPattern;
 import com.refinedmods.refinedstorage.api.autocrafting.task.ICraftingRequestInfo;
 import com.refinedmods.refinedstorage.api.autocrafting.task.ICraftingTask;
@@ -13,13 +12,14 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.IntNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.ResourceLocationException;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+import nz.co.mirality.refinedstorage4computercraft.RS4CC;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * This converts Minecraft values into data suitable for Lua function return values.
@@ -109,26 +110,16 @@ public class LuaConversion {
         ItemData.fill(result, stack);
 
         if (stack.hasTag()) {
-            // by default ComputerCraft only puts in a hash of the NBT,
-            // which is inadequate to reconstruct the tag for the purposes
-            // of IComparer.COMPARE_NBT
-            result.put("json", convertNBT(stack.getTag()));
+            CompoundNBT tag = stack.getTag();
+            if (RS4CC.CONFIG.getAllowJsonTags()) {
+                result.put("json", NBTUtil.toText(tag));
+            }
+            if (RS4CC.CONFIG.getAllowEncodedTags()) {
+                result.put("tag", NBTUtil.toBinary(tag));
+            }
         }
+
         return result;
-    }
-
-    @Nonnull
-    public static ItemStack getItemStack(Map<?, ?> table) throws LuaException {
-        if (table == null || !table.containsKey("name")) return ItemStack.EMPTY;
-
-        String name = TableHelper.getStringField(table, "name");
-        int count = TableHelper.optIntField(table, "count", 1);
-        CompoundNBT nbt = parseNBT(TableHelper.optStringField(table, "json", null));
-
-        Item item = getRegistryEntry(name, "item", ForgeRegistries.ITEMS);
-        ItemStack stack = new ItemStack(item, count);
-        stack.setTag(nbt);
-        return stack;
     }
 
     @Nonnull
@@ -136,38 +127,133 @@ public class LuaConversion {
         FluidData.fill(result, stack);
 
         if (stack.hasTag()) {
-            result.put("json", convertNBT(stack.getTag()));
+            CompoundNBT tag = stack.getTag();
+
+            // the current version of ComputerCraft doesn't provide the NBT hash on fluids, but it should...
+            if (!result.containsKey("nbt")) {
+                String hash = NBTUtil.toHash(stack.getTag());
+                if (hash != null) {
+                    result.put("nbt", hash);
+                }
+            }
+
+            if (RS4CC.CONFIG.getAllowJsonTags()) {
+                result.put("json", NBTUtil.toText(tag));
+            }
+            if (RS4CC.CONFIG.getAllowEncodedTags()) {
+                result.put("tag", NBTUtil.toBinary(tag));
+            }
         }
+
         return result;
     }
 
     @Nonnull
-    public static FluidStack getFluidStack(Map<?, ?> table, int defaultAmount) throws LuaException {
+    public static ItemStack getItemStack(@Nullable Map<?, ?> table, @Nonnull Supplier<ItemStackListSearcher> searcher) throws LuaException {
+        if (table == null || !table.containsKey("name")) return ItemStack.EMPTY;
+
+        String name = TableHelper.getStringField(table, "name");
+        int count = TableHelper.optIntField(table, "count", 1);
+
+        Item item = getRegistryEntry(name, "item", ForgeRegistries.ITEMS);
+        ItemStack stack = new ItemStack(item, count);
+
+        stack.setTag(getTag(stack, table, searcher));
+
+        return stack;
+    }
+
+    @Nonnull
+    public static FluidStack getFluidStack(@Nullable Map<?, ?> table, int defaultAmount, @Nonnull Supplier<FluidStackListSearcher> searcher) throws LuaException {
         if (table == null || !table.containsKey("name")) return FluidStack.EMPTY;
 
         String name = TableHelper.getStringField(table, "name");
         int amount = TableHelper.optIntField(table, "amount", defaultAmount);
-        CompoundNBT nbt = parseNBT(TableHelper.optStringField(table, "json", null));
 
         Fluid fluid = getRegistryEntry(name, "fluid", ForgeRegistries.FLUIDS);
         FluidStack stack = new FluidStack(fluid, amount);
-        stack.setTag(nbt);
+
+        stack.setTag(getTag(stack, table, searcher));
+
         return stack;
     }
 
     @Nullable
-    private static String convertNBT(CompoundNBT nbt) {
-        return nbt == null ? null : nbt.toString();
+    private static CompoundNBT getTag(ItemStack stack, Map<?, ?> table, Supplier<ItemStackListSearcher> searcher) throws LuaException {
+        CompoundNBT nbt = parseJson(table);
+        if (nbt == null) {
+            nbt = parseBinaryTag(table);
+            if (nbt == null) {
+                nbt = parseNbtHash(stack, table, searcher);
+            }
+        }
+        return nbt;
     }
 
     @Nullable
-    private static CompoundNBT parseNBT(String json) {
-        try {
-            return json == null ? null : JsonToNBT.getTagFromJson(json);
-        } catch (CommandSyntaxException e) {
-            RS4CC.LOGGER.error("Error parsing NBT data", e);
-            return null;
+    private static CompoundNBT getTag(FluidStack stack, Map<?, ?> table, Supplier<FluidStackListSearcher> searcher) throws LuaException {
+        CompoundNBT nbt = parseJson(table);
+        if (nbt == null) {
+            nbt = parseBinaryTag(table);
+            if (nbt == null) {
+                nbt = parseNbtHash(stack, table, searcher);
+            }
         }
+        return nbt;
+    }
+
+    @Nullable
+    private static CompoundNBT parseJson(@Nonnull Map<?, ?> table) throws LuaException {
+        String json = TableHelper.optStringField(table, "json", null);
+        return NBTUtil.fromText(json);
+    }
+
+    @Nullable
+    private static CompoundNBT parseBinaryTag(@Nonnull Map<?, ?> table) throws LuaException {
+        String tag = TableHelper.optStringField(table, "tag", null);
+        return NBTUtil.fromBinary(tag);
+    }
+
+    @Nullable
+    private static CompoundNBT parseNbtHash(@Nonnull ItemStack stack, @Nonnull Map<?, ?> table, @Nonnull Supplier<ItemStackListSearcher> searcher) throws LuaException {
+        String nbt = TableHelper.optStringField(table, "nbt", null);
+        if (nbt == null || nbt.isEmpty()) return null;
+
+        for (ItemStack search : searcher.get().getStacks(stack)) {
+            String hash = NBTUtil.toHash(search.getTag());
+            if (nbt.equals(hash)) {
+                return search.getTag().copy();
+            }
+        }
+
+        // we didn't find a matching tag in the available list, so we can't
+        // reconstruct the input tag successfully.  however, we do need to
+        // generate *some* tag to try to ensure that we don't match anything
+        // (unless they're explicitly requesting ignoring NBT later on).
+        CompoundNBT tag = new CompoundNBT();
+        tag.put("_rsPfake_", IntNBT.valueOf(424242));
+        return tag;
+    }
+
+    @Nullable
+    private static CompoundNBT parseNbtHash(@Nonnull FluidStack stack, @Nonnull Map<?, ?> table, @Nonnull Supplier<FluidStackListSearcher> searcher) throws LuaException {
+        String nbt = TableHelper.optStringField(table, "nbt", null);
+        if (nbt == null || nbt.isEmpty()) return null;
+
+        for (FluidStack search : searcher.get().getStacks(stack)) {
+            String hash = NBTUtil.toHash(search.getTag());
+            if (nbt.equals(hash)) {
+                return search.getTag().copy();
+            }
+        }
+
+        // we didn't find a matching tag in the available list, so we can't
+        // reconstruct the input tag successfully.  however, we do need to
+        // generate *some* tag to try to ensure that we don't match anything
+        // (unless they're explicitly requesting ignoring NBT later on).
+        CompoundNBT tag = new CompoundNBT();
+        tag.put("_rsPfake_", IntNBT.valueOf(424242));
+        return tag;
     }
 
     @Nonnull

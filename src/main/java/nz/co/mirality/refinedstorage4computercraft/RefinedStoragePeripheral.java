@@ -25,53 +25,63 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
+import nz.co.mirality.refinedstorage4computercraft.tiles.PeripheralTile;
+import nz.co.mirality.refinedstorage4computercraft.util.FluidStackListSearcher;
+import nz.co.mirality.refinedstorage4computercraft.util.ItemStackListSearcher;
+import nz.co.mirality.refinedstorage4computercraft.util.LuaConversion;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Supplier;
 
 public class RefinedStoragePeripheral implements IPeripheral {
-    public RefinedStoragePeripheral(PeripheralNetworkNode node) {
-        this.node = node;
+    public RefinedStoragePeripheral(PeripheralTile tile) {
+        this.tile = tile;
     }
 
-    private final PeripheralNetworkNode node;
+    private final PeripheralTile tile;
+
+    @Nonnull
+    private PeripheralNetworkNode getNode() {
+        return this.tile.getNode();
+    }
 
     @Nonnull
     @Override
     public String getType() {
-        return this.node.getId().toString();
+        return getNode().getId().toString();
     }
 
     @Override
     public void attach(@Nonnull IComputerAccess computer) {
         RS4CC.LOGGER.debug("Attached computer {} to network", computer.getID());
-        this.node.computerConnected();
+        getNode().computerConnected();
     }
 
     @Override
     public void detach(@Nonnull IComputerAccess computer) {
         RS4CC.LOGGER.debug("Detached computer {} from network", computer.getID());
-        this.node.computerDisconnected();
+        getNode().computerDisconnected();
     }
 
     @Nullable
     @Override
     public Object getTarget() {
-        return this.node;
+        return this.tile;
     }
 
     @Override
     public boolean equals(@Nullable IPeripheral iPeripheral) {
         if (iPeripheral instanceof RefinedStoragePeripheral) {
-            return this.node == ((RefinedStoragePeripheral) iPeripheral).node;
+            return this.tile == ((RefinedStoragePeripheral) iPeripheral).tile;
         }
         return false;
     }
 
     @Nullable
     private INetwork getNetwork() {
-        return this.node.getNetwork();
+        return getNode().getNetwork();
     }
 
     private static boolean isConnected(INetwork network) {
@@ -138,7 +148,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
             return disconnected();
         }
 
-        ItemStack items = LuaConversion.getItemStack(stack);
+        ItemStack items = LuaConversion.getItemStack(stack, craftableItemsSearcher(network));
         return new Object[] { LuaConversion.convert(network.getCraftingManager().getPattern(items)) };
     }
 
@@ -157,7 +167,8 @@ public class RefinedStoragePeripheral implements IPeripheral {
             return disconnected();
         }
 
-        FluidStack fluid = LuaConversion.getFluidStack(stack, FluidAttributes.BUCKET_VOLUME);
+        FluidStack fluid = LuaConversion.getFluidStack(stack, FluidAttributes.BUCKET_VOLUME,
+                craftableFluidsSearcher(network));
         return new Object[] { LuaConversion.convert(network.getCraftingManager().getPattern(fluid)) };
     }
 
@@ -220,7 +231,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
             return disconnected();
         }
 
-        ItemStack items = LuaConversion.getItemStack(stack);
+        ItemStack items = LuaConversion.getItemStack(stack, craftableItemsSearcher(network));
         return new Object[] { network.getCraftingManager().getPattern(items) != null };
     }
 
@@ -239,7 +250,8 @@ public class RefinedStoragePeripheral implements IPeripheral {
             return disconnected();
         }
 
-        FluidStack fluid = LuaConversion.getFluidStack(stack, FluidAttributes.BUCKET_VOLUME);
+        FluidStack fluid = LuaConversion.getFluidStack(stack, FluidAttributes.BUCKET_VOLUME,
+                craftableFluidsSearcher(network));
         return new Object[] { network.getCraftingManager().getPattern(fluid) != null };
     }
 
@@ -261,7 +273,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
             return disconnected();
         }
 
-        ItemStack stack = LuaConversion.getItemStack(args.getTable(0));
+        ItemStack stack = LuaConversion.getItemStack(args.getTable(0), craftableItemsSearcher(network));
         int amount = args.optInt(1, 1);
         boolean canSchedule = args.optBoolean(2, true);
 
@@ -300,7 +312,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
             return disconnected();
         }
 
-        FluidStack stack = LuaConversion.getFluidStack(args.getTable(0), FluidAttributes.BUCKET_VOLUME);
+        FluidStack stack = LuaConversion.getFluidStack(args.getTable(0), FluidAttributes.BUCKET_VOLUME, craftableFluidsSearcher(network));
         int amount = args.optInt(1, stack.getAmount());
         boolean canSchedule = args.optBoolean(2, true);
 
@@ -336,7 +348,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
             return disconnected();
         }
 
-        ItemStack items = LuaConversion.getItemStack(stack);
+        ItemStack items = LuaConversion.getItemStack(stack, craftableItemsSearcher(network));
 
         int count = 0;
         for (ICraftingTask task : network.getCraftingManager().getTasks()) {
@@ -365,7 +377,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
             return disconnected();
         }
 
-        FluidStack fluid = LuaConversion.getFluidStack(stack, FluidAttributes.BUCKET_VOLUME);
+        FluidStack fluid = LuaConversion.getFluidStack(stack, FluidAttributes.BUCKET_VOLUME, craftableFluidsSearcher(network));
 
         int count = 0;
         for (ICraftingTask task : network.getCraftingManager().getTasks()) {
@@ -402,12 +414,12 @@ public class RefinedStoragePeripheral implements IPeripheral {
         }
 
         // First and second argument: fluid and amount.
-        FluidStack stack = LuaConversion.getFluidStack(args.getTable(0), args.optInt(1, FluidAttributes.BUCKET_VOLUME));
+        FluidStack stack = LuaConversion.getFluidStack(args.getTable(0), args.optInt(1, FluidAttributes.BUCKET_VOLUME), storedFluidsSearcher(network));
         // Third argument: which direction to extract to
         Direction direction = getDirection(args, 2);
 
         // Get the tile-entity on the specified side
-        TileEntity targetEntity = network.getWorld().getTileEntity(this.node.getPos().offset(direction));
+        TileEntity targetEntity = network.getWorld().getTileEntity(this.tile.getPos().offset(direction));
         IFluidHandler handler = targetEntity != null ? targetEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).resolve().orElse(null) : null;
         if (handler == null) {
             return error("No fluid tank on the given side");
@@ -455,7 +467,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
             return disconnected();
         }
 
-        FluidStack stack = LuaConversion.getFluidStack(args.getTable(0), FluidAttributes.BUCKET_VOLUME);
+        FluidStack stack = LuaConversion.getFluidStack(args.getTable(0), FluidAttributes.BUCKET_VOLUME, storedFluidsSearcher(network));
         boolean compareNBT = args.optBoolean(1, true);
 
         int flags = compareNBT ? IComparer.COMPARE_NBT : 0;
@@ -504,14 +516,14 @@ public class RefinedStoragePeripheral implements IPeripheral {
         }
 
         // First argument: the item stack to extract
-        ItemStack stack = LuaConversion.getItemStack(args.getTable(0));
+        ItemStack stack = LuaConversion.getItemStack(args.getTable(0), storedItemsSearcher(network));
         // Second argument: the number of items to extract, at least 1 ...
         int count = args.optInt(1, stack.getCount());
         // Third argument: which direction to extract to
         Direction direction = getDirection(args, 2);
 
         // Get the tile-entity on the specified side
-        TileEntity targetEntity = network.getWorld().getTileEntity(this.node.getPos().offset(direction));
+        TileEntity targetEntity = network.getWorld().getTileEntity(this.tile.getPos().offset(direction));
         IItemHandler handler = targetEntity != null ? targetEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).resolve().orElse(null) : null;
         if (handler == null) {
             return error("No item container on the given side");
@@ -570,7 +582,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
             return disconnected();
         }
 
-        ItemStack stack = LuaConversion.getItemStack(args.getTable(0));
+        ItemStack stack = LuaConversion.getItemStack(args.getTable(0), storedItemsSearcher(network));
         boolean compareNBT = args.optBoolean(1, true);
 
         int flags = compareNBT ? IComparer.COMPARE_NBT : 0;
@@ -686,5 +698,21 @@ public class RefinedStoragePeripheral implements IPeripheral {
             return Direction.byIndex(args.getInt(index));
         }
         return Direction.DOWN;
+    }
+
+    private static Supplier<ItemStackListSearcher> storedItemsSearcher(INetwork network) {
+        return () -> new ItemStackListSearcher(network.getItemStorageCache().getList());
+    }
+
+    private static Supplier<ItemStackListSearcher> craftableItemsSearcher(INetwork network) {
+        return () -> new ItemStackListSearcher(network.getItemStorageCache().getCraftablesList());
+    }
+
+    private static Supplier<FluidStackListSearcher> storedFluidsSearcher(INetwork network) {
+        return () -> new FluidStackListSearcher(network.getFluidStorageCache().getList());
+    }
+
+    private static Supplier<FluidStackListSearcher> craftableFluidsSearcher(INetwork network) {
+        return () -> new FluidStackListSearcher(network.getFluidStorageCache().getCraftablesList());
     }
 }

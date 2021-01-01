@@ -120,6 +120,8 @@ dependencies {
     runtimeOnly fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}")
     runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}:${jei_version}")
     runtimeOnly fg.deobf("curse.maven:cyclic-239286:${cy_fileid}")
+    //runtimeOnly fg.deobf("curse.maven:chisel-231095:3133859")
+    runtimeOnly fg.deobf("curse.maven:immersive-231951:3101446")
 }
 
 jar {
