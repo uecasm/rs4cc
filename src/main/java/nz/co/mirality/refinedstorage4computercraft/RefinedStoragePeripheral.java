@@ -8,6 +8,7 @@ import com.refinedmods.refinedstorage.api.storage.IStorage;
 import com.refinedmods.refinedstorage.api.storage.disk.IStorageDisk;
 import com.refinedmods.refinedstorage.api.util.Action;
 import com.refinedmods.refinedstorage.api.util.IComparer;
+import com.refinedmods.refinedstorage.api.util.IStackList;
 import com.refinedmods.refinedstorage.apiimpl.API;
 import dan200.computercraft.api.lua.IArguments;
 import dan200.computercraft.api.lua.LuaException;
@@ -26,8 +27,6 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import nz.co.mirality.refinedstorage4computercraft.tiles.PeripheralTile;
-import nz.co.mirality.refinedstorage4computercraft.util.FluidStackListSearcher;
-import nz.co.mirality.refinedstorage4computercraft.util.ItemStackListSearcher;
 import nz.co.mirality.refinedstorage4computercraft.util.LuaConversion;
 
 import javax.annotation.Nonnull;
@@ -700,19 +699,19 @@ public class RefinedStoragePeripheral implements IPeripheral {
         return Direction.DOWN;
     }
 
-    private static Supplier<ItemStackListSearcher> storedItemsSearcher(INetwork network) {
-        return () -> new ItemStackListSearcher(network.getItemStorageCache().getList());
+    private static Supplier<IStackList<ItemStack>> storedItemsSearcher(INetwork network) {
+        return () -> network.getItemStorageCache().getList();
     }
 
-    private static Supplier<ItemStackListSearcher> craftableItemsSearcher(INetwork network) {
-        return () -> new ItemStackListSearcher(network.getItemStorageCache().getCraftablesList());
+    private static Supplier<IStackList<ItemStack>> craftableItemsSearcher(INetwork network) {
+        return () -> network.getItemStorageCache().getCraftablesList();
     }
 
-    private static Supplier<FluidStackListSearcher> storedFluidsSearcher(INetwork network) {
-        return () -> new FluidStackListSearcher(network.getFluidStorageCache().getList());
+    private static Supplier<IStackList<FluidStack>> storedFluidsSearcher(INetwork network) {
+        return () -> network.getFluidStorageCache().getList();
     }
 
-    private static Supplier<FluidStackListSearcher> craftableFluidsSearcher(INetwork network) {
-        return () -> new FluidStackListSearcher(network.getFluidStorageCache().getCraftablesList());
+    private static Supplier<IStackList<FluidStack>> craftableFluidsSearcher(INetwork network) {
+        return () -> network.getFluidStorageCache().getCraftablesList();
     }
 }

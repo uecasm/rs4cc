@@ -29,7 +29,7 @@ This adds a "Refined Storage Peripheral" block that can be accessed as a Compute
 [[dependencies.refinedstorage4computercraft]]
     modId="refinedstorage"
     mandatory=true
-    versionRange="[1.9.9,)"
+    versionRange="[1.9.10,)"
     ordering="AFTER"
     side="BOTH"
 [[dependencies.refinedstorage4computercraft]]

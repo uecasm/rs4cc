@@ -3,6 +3,7 @@ package nz.co.mirality.refinedstorage4computercraft.util;
 import com.refinedmods.refinedstorage.api.autocrafting.ICraftingPattern;
 import com.refinedmods.refinedstorage.api.autocrafting.task.ICraftingRequestInfo;
 import com.refinedmods.refinedstorage.api.autocrafting.task.ICraftingTask;
+import com.refinedmods.refinedstorage.api.util.IStackList;
 import com.refinedmods.refinedstorage.api.util.StackListEntry;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.core.apis.TableHelper;
@@ -149,7 +150,7 @@ public class LuaConversion {
     }
 
     @Nonnull
-    public static ItemStack getItemStack(@Nullable Map<?, ?> table, @Nonnull Supplier<ItemStackListSearcher> searcher) throws LuaException {
+    public static ItemStack getItemStack(@Nullable Map<?, ?> table, @Nonnull Supplier<IStackList<ItemStack>> allStacks) throws LuaException {
         if (table == null || !table.containsKey("name")) return ItemStack.EMPTY;
 
         String name = TableHelper.getStringField(table, "name");
@@ -158,13 +159,13 @@ public class LuaConversion {
         Item item = getRegistryEntry(name, "item", ForgeRegistries.ITEMS);
         ItemStack stack = new ItemStack(item, count);
 
-        stack.setTag(getTag(stack, table, searcher));
+        stack.setTag(getTag(stack, table, allStacks));
 
         return stack;
     }
 
     @Nonnull
-    public static FluidStack getFluidStack(@Nullable Map<?, ?> table, int defaultAmount, @Nonnull Supplier<FluidStackListSearcher> searcher) throws LuaException {
+    public static FluidStack getFluidStack(@Nullable Map<?, ?> table, int defaultAmount, @Nonnull Supplier<IStackList<FluidStack>> allStacks) throws LuaException {
         if (table == null || !table.containsKey("name")) return FluidStack.EMPTY;
 
         String name = TableHelper.getStringField(table, "name");
@@ -173,30 +174,30 @@ public class LuaConversion {
         Fluid fluid = getRegistryEntry(name, "fluid", ForgeRegistries.FLUIDS);
         FluidStack stack = new FluidStack(fluid, amount);
 
-        stack.setTag(getTag(stack, table, searcher));
+        stack.setTag(getTag(stack, table, allStacks));
 
         return stack;
     }
 
     @Nullable
-    private static CompoundNBT getTag(ItemStack stack, Map<?, ?> table, Supplier<ItemStackListSearcher> searcher) throws LuaException {
+    private static CompoundNBT getTag(ItemStack stack, Map<?, ?> table, Supplier<IStackList<ItemStack>> allStacks) throws LuaException {
         CompoundNBT nbt = parseJson(table);
         if (nbt == null) {
             nbt = parseBinaryTag(table);
             if (nbt == null) {
-                nbt = parseNbtHash(stack, table, searcher);
+                nbt = parseNbtHash(stack, table, allStacks);
             }
         }
         return nbt;
     }
 
     @Nullable
-    private static CompoundNBT getTag(FluidStack stack, Map<?, ?> table, Supplier<FluidStackListSearcher> searcher) throws LuaException {
+    private static CompoundNBT getTag(FluidStack stack, Map<?, ?> table, Supplier<IStackList<FluidStack>> allStacks) throws LuaException {
         CompoundNBT nbt = parseJson(table);
         if (nbt == null) {
             nbt = parseBinaryTag(table);
             if (nbt == null) {
-                nbt = parseNbtHash(stack, table, searcher);
+                nbt = parseNbtHash(stack, table, allStacks);
             }
         }
         return nbt;
@@ -215,14 +216,15 @@ public class LuaConversion {
     }
 
     @Nullable
-    private static CompoundNBT parseNbtHash(@Nonnull ItemStack stack, @Nonnull Map<?, ?> table, @Nonnull Supplier<ItemStackListSearcher> searcher) throws LuaException {
+    private static CompoundNBT parseNbtHash(@Nonnull ItemStack stack, @Nonnull Map<?, ?> table, @Nonnull Supplier<IStackList<ItemStack>> allStacks) throws LuaException {
         String nbt = TableHelper.optStringField(table, "nbt", null);
         if (nbt == null || nbt.isEmpty()) return null;
 
-        for (ItemStack search : searcher.get().getStacks(stack)) {
-            String hash = NBTUtil.toHash(search.getTag());
+        for (StackListEntry<ItemStack> search : allStacks.get().getStacks(stack)) {
+            CompoundNBT tag = search.getStack().getTag();
+            String hash = NBTUtil.toHash(tag);
             if (nbt.equals(hash)) {
-                return search.getTag().copy();
+                return tag.copy();
             }
         }
 
@@ -236,14 +238,15 @@ public class LuaConversion {
     }
 
     @Nullable
-    private static CompoundNBT parseNbtHash(@Nonnull FluidStack stack, @Nonnull Map<?, ?> table, @Nonnull Supplier<FluidStackListSearcher> searcher) throws LuaException {
+    private static CompoundNBT parseNbtHash(@Nonnull FluidStack stack, @Nonnull Map<?, ?> table, @Nonnull Supplier<IStackList<FluidStack>> allStacks) throws LuaException {
         String nbt = TableHelper.optStringField(table, "nbt", null);
         if (nbt == null || nbt.isEmpty()) return null;
 
-        for (FluidStack search : searcher.get().getStacks(stack)) {
-            String hash = NBTUtil.toHash(search.getTag());
+        for (StackListEntry<FluidStack> search : allStacks.get().getStacks(stack)) {
+            CompoundNBT tag = search.getStack().getTag();
+            String hash = NBTUtil.toHash(tag);
             if (nbt.equals(hash)) {
-                return search.getTag().copy();
+                return tag.copy();
             }
         }
 
