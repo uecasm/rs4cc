@@ -29,34 +29,36 @@ public final class RS4CC {
     public static final String NAME = "RefinedStorage for ComputerCraft Integration";
 
     public static final String PERIPHERAL_ID = "peripheral";
+    public static final String PERIPHERAL_NAME = "refinedstorage";
 
     public static final RS4CCConfig CONFIG = new RS4CCConfig();
     public static final Logger LOGGER = LogManager.getLogger();
 
     public RS4CC() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CONFIG.getSpec());
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, CONFIG.getSpec());
     }
 
     @SubscribeEvent
-    public static final void commonSetup(FMLCommonSetupEvent e) {
+    public static void commonSetup(FMLCommonSetupEvent e) {
         API.instance().getNetworkNodeRegistry().add(PeripheralNetworkNode.ID,
                 (tag, world, pos) -> readAndReturn(tag, new PeripheralNetworkNode(world, pos)));
     }
 
     @SubscribeEvent
-    public static final void registerBlocks(RegistryEvent.Register<Block> e) {
+    public static void registerBlocks(RegistryEvent.Register<Block> e) {
         e.getRegistry().registerAll(new PeripheralBlock().setRegistryName(PERIPHERAL_ID));
     }
 
     @SubscribeEvent
-    public static final void registerItems(RegistryEvent.Register<Item> e) {
+    public static void registerItems(RegistryEvent.Register<Item> e) {
         e.getRegistry().registerAll(new BaseBlockItem(RS4CCBlocks.PERIPHERAL,
                 new Item.Properties().group(RS.MAIN_GROUP)).setRegistryName(PERIPHERAL_ID));
     }
 
     @SubscribeEvent
-    public static final void registerTiles(RegistryEvent.Register<TileEntityType<?>> e) {
-        e.getRegistry().registerAll(TileEntityType.Builder.create(PeripheralTile::new).build(null).setRegistryName(PERIPHERAL_ID));
+    public static void registerTiles(RegistryEvent.Register<TileEntityType<?>> e) {
+        e.getRegistry().registerAll(TileEntityType.Builder.create(PeripheralTile::new)
+                .build(null).setRegistryName(PERIPHERAL_ID));
     }
 
     private static INetworkNode readAndReturn(CompoundNBT tag, NetworkNode node) {

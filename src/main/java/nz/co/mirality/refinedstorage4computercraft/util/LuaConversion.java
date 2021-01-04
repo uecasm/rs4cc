@@ -16,6 +16,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.IntNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.ResourceLocationException;
+import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -24,10 +25,7 @@ import nz.co.mirality.refinedstorage4computercraft.RS4CC;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -112,10 +110,10 @@ public class LuaConversion {
 
         if (stack.hasTag()) {
             CompoundNBT tag = stack.getTag();
-            if (RS4CC.CONFIG.getAllowJsonTags()) {
+            if (RS4CC.CONFIG.getTags().getAllowJson()) {
                 result.put("json", NBTUtil.toText(tag));
             }
-            if (RS4CC.CONFIG.getAllowEncodedTags()) {
+            if (RS4CC.CONFIG.getTags().getAllowEncoded()) {
                 result.put("tag", NBTUtil.toBinary(tag));
             }
         }
@@ -126,6 +124,7 @@ public class LuaConversion {
     @Nonnull
     private static Map<Object, Object> convertStack(@Nonnull Map<Object, Object> result, @Nonnull FluidStack stack) {
         FluidData.fill(result, stack);
+        result.put("displayName", stack.getDisplayName().getString());
 
         if (stack.hasTag()) {
             CompoundNBT tag = stack.getTag();
@@ -138,10 +137,10 @@ public class LuaConversion {
                 }
             }
 
-            if (RS4CC.CONFIG.getAllowJsonTags()) {
+            if (RS4CC.CONFIG.getTags().getAllowJson()) {
                 result.put("json", NBTUtil.toText(tag));
             }
-            if (RS4CC.CONFIG.getAllowEncodedTags()) {
+            if (RS4CC.CONFIG.getTags().getAllowEncoded()) {
                 result.put("tag", NBTUtil.toBinary(tag));
             }
         }
@@ -150,14 +149,57 @@ public class LuaConversion {
     }
 
     @Nonnull
-    public static ItemStack getItemStack(@Nullable Map<?, ?> table, @Nonnull Supplier<IStackList<ItemStack>> allStacks) throws LuaException {
+    public static Object convertZeroItemStack(@Nonnull Map<?, ?> stack) throws LuaException {
+        ItemStack item = getBasicItemStack(stack);
+        // ItemStack treats a zero count as empty and disables all of the
+        // normal get/copy/etc operations, so we have to initially convert
+        // it as a one-stack and then override the result.
+        Map<Object, Object> data = new HashMap<>();
+        convertStack(data, item);
+        data.put("count", 0);
+        return data;
+    }
+
+    @Nonnull
+    public static Object convertZeroFluidStack(@Nonnull Map<?, ?> stack) throws LuaException {
+        FluidStack fluid = getBasicFluidStack(stack);
+        // FluidStacks don't currently require any special effort, but just
+        // in case we'll process them similarly to ItemStacks.
+        Map<Object, Object> data = new HashMap<>();
+        convertStack(data, fluid);
+        data.put("amount", 0);
+        return data;
+    }
+
+    @Nonnull
+    public static ItemStack getBasicItemStack(@Nullable Map<?, ?> table) throws LuaException {
         if (table == null || !table.containsKey("name")) return ItemStack.EMPTY;
 
         String name = TableHelper.getStringField(table, "name");
-        int count = TableHelper.optIntField(table, "count", 1);
 
         Item item = getRegistryEntry(name, "item", ForgeRegistries.ITEMS);
-        ItemStack stack = new ItemStack(item, count);
+        return new ItemStack(item, 1);
+    }
+
+    @Nonnull
+    public static FluidStack getBasicFluidStack(@Nullable Map<?, ?> table) throws LuaException {
+        if (table == null || !table.containsKey("name")) return FluidStack.EMPTY;
+
+        String name = TableHelper.getStringField(table, "name");
+
+        Fluid fluid = getRegistryEntry(name, "fluid", ForgeRegistries.FLUIDS);
+        return new FluidStack(fluid, FluidAttributes.BUCKET_VOLUME);
+    }
+
+    @Nonnull
+    public static ItemStack getItemStack(@Nullable Map<?, ?> table, @Nonnull Supplier<IStackList<ItemStack>> allStacks) throws LuaException {
+        ItemStack stack = getBasicItemStack(table);
+        if (stack.isEmpty()) return stack;
+        assert table != null;
+
+        if (table.containsKey("count")) {
+            stack.setCount(TableHelper.getIntField(table, "count"));
+        }
 
         stack.setTag(getTag(stack, table, allStacks));
 
@@ -165,18 +207,46 @@ public class LuaConversion {
     }
 
     @Nonnull
-    public static FluidStack getFluidStack(@Nullable Map<?, ?> table, int defaultAmount, @Nonnull Supplier<IStackList<FluidStack>> allStacks) throws LuaException {
-        if (table == null || !table.containsKey("name")) return FluidStack.EMPTY;
+    public static FluidStack getFluidStack(@Nullable Map<?, ?> table, @Nonnull Supplier<IStackList<FluidStack>> allStacks) throws LuaException {
+        FluidStack stack = getBasicFluidStack(table);
+        if (stack.isEmpty()) return stack;
+        assert table != null;
 
-        String name = TableHelper.getStringField(table, "name");
-        int amount = TableHelper.optIntField(table, "amount", defaultAmount);
-
-        Fluid fluid = getRegistryEntry(name, "fluid", ForgeRegistries.FLUIDS);
-        FluidStack stack = new FluidStack(fluid, amount);
+        if (table.containsKey("amount")) {
+            stack.setAmount(TableHelper.getIntField(table, "amount"));
+        }
 
         stack.setTag(getTag(stack, table, allStacks));
 
         return stack;
+    }
+
+    @Nonnull
+    public static List<ItemStack> getItemStacks(@Nullable Map<?, ?> table, @Nonnull Supplier<IStackList<ItemStack>> allStacks) throws LuaException {
+        IStackList<ItemStack> stackList = allStacks.get();
+        Collection<StackListEntry<ItemStack>> entries = table == null
+                ? stackList.getStacks()
+                : stackList.getStacks(getBasicItemStack(table));
+
+        List<ItemStack> result = new ArrayList<>(entries.size());
+        for (StackListEntry<ItemStack> entry : entries) {
+            result.add(entry.getStack());
+        }
+        return result;
+    }
+
+    @Nonnull
+    public static List<FluidStack> getFluidStacks(@Nullable Map<?, ?> table, @Nonnull Supplier<IStackList<FluidStack>> allStacks) throws LuaException {
+        IStackList<FluidStack> stackList = allStacks.get();
+        Collection<StackListEntry<FluidStack>> entries = table == null
+                ? stackList.getStacks()
+                : stackList.getStacks(getBasicFluidStack(table));
+
+        List<FluidStack> result = new ArrayList<>(entries.size());
+        for (StackListEntry<FluidStack> entry : entries) {
+            result.add(entry.getStack());
+        }
+        return result;
     }
 
     @Nullable

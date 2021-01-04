@@ -1,0 +1,7 @@
+AutoStock is a service program (intended to run mostly in the background from your startup script) that monitors a Refined Storage system and reports on the current stock levels of specific items vs. a desired minimum quantity.
+
+Additionally, if one or more items are below the specified minimum quantity, and the system knows how to craft the items, then it will automatically issue crafting requests to keep them stocked up.
+
+The specific items and quantities can be configured via the 'stock' program.  See "help stock" for more details.
+
+To operate, an Advanced Computer is recommended (but not required), and it must be connected either directly or via Wired Modems to both a single Refined Storage Peripheral and a single monitor.  The monitor must be an Advanced Monitor at least 3 blocks wide and 1 block high, but can be made larger if desired (2 blocks high is recommended).

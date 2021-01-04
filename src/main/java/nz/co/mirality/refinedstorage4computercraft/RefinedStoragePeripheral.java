@@ -1,6 +1,5 @@
 package nz.co.mirality.refinedstorage4computercraft;
 
-import com.refinedmods.refinedstorage.api.autocrafting.ICraftingPattern;
 import com.refinedmods.refinedstorage.api.autocrafting.task.ICalculationResult;
 import com.refinedmods.refinedstorage.api.autocrafting.task.ICraftingTask;
 import com.refinedmods.refinedstorage.api.network.INetwork;
@@ -15,11 +14,11 @@ import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
+import nz.co.mirality.refinedstorage4computercraft.data.LuaDoc;
 import nz.co.mirality.refinedstorage4computercraft.nodes.PeripheralNetworkNode;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
-import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
@@ -34,6 +33,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Supplier;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class RefinedStoragePeripheral implements IPeripheral {
     public RefinedStoragePeripheral(PeripheralTile tile) {
         this.tile = tile;
@@ -49,7 +49,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
     @Nonnull
     @Override
     public String getType() {
-        return getNode().getId().toString();
+        return RS4CC.PERIPHERAL_NAME;
     }
 
     @Override
@@ -96,6 +96,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
      * @since 1.0.0
      */
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 1, order = 1)
     public final boolean isConnected() {
         return isConnected(this.getNetwork());
     }
@@ -107,6 +108,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
      */
     @Nonnull
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 1, order = 4, returns = "number")
     public final Object[] getEnergyUsage() {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
@@ -122,6 +124,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
      */
     @Nonnull
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 6, order = 1)
     public final Object[] getTasks() {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
@@ -141,13 +144,14 @@ public class RefinedStoragePeripheral implements IPeripheral {
      */
     @Nonnull
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 5, order = 21, args = "table stack")
     public final Object[] getPattern(final Map<?, ?> stack) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        ItemStack items = LuaConversion.getItemStack(stack, craftableItemsSearcher(network));
+        ItemStack items = LuaConversion.getItemStack(stack, craftableItems(network));
         return new Object[] { LuaConversion.convert(network.getCraftingManager().getPattern(items)) };
     }
 
@@ -160,59 +164,55 @@ public class RefinedStoragePeripheral implements IPeripheral {
      */
     @Nonnull
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 5, order = 22, args = "table stack")
     public final Object[] getFluidPattern(final Map<?, ?> stack) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        FluidStack fluid = LuaConversion.getFluidStack(stack, FluidAttributes.BUCKET_VOLUME,
-                craftableFluidsSearcher(network));
+        FluidStack fluid = LuaConversion.getFluidStack(stack, craftableFluids(network));
         return new Object[] { LuaConversion.convert(network.getCraftingManager().getPattern(fluid)) };
     }
 
     /**
      * Gets the item patterns of this network.
+     * @param stack If specified, only returns patterns with the matching output item type (ignoring
+     *              tags); if omitted, returns patterns for all item types.
      * @return An array of all the possible output items, or null if disconnected.
-     * @since 1.0.0
+     * @since 1.0.0 for method, 1.1.0 for stack parameter
      */
     @Nonnull
     @LuaFunction(mainThread = true)
-    public final Object[] getPatterns() {
+    @LuaDoc(group = 5, order = 1, args = "[table stack]")
+    public final Object[] getPatterns(@Nonnull final Optional<Map<?, ?>> stack) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        List<ItemStack> patterns = new LinkedList<>();
-        for (ICraftingPattern pattern : network.getCraftingManager().getPatterns()) {
-            if (!pattern.getOutputs().isEmpty()) {
-                patterns.addAll(pattern.getOutputs());
-            }
-        }
-        return new Object[] { LuaConversion.convert(patterns) };
+        List<ItemStack> outputs = LuaConversion.getItemStacks(stack.orElse(null), craftableItems(network));
+        return new Object[] { LuaConversion.convert(outputs) };
     }
 
     /**
      * Gets the fluid patterns of this network.
+     * @param stack If specified, only returns patterns with the matching output fluid type (ignoring
+     *              tags); if omitted, returns patterns for all fluid types.
      * @return An array of all the possible output fluids, or null if disconnected.
-     * @since 1.0.0
+     * @since 1.0.0 for method, 1.1.0 for stack parameter
      */
     @Nonnull
     @LuaFunction(mainThread = true)
-    public final Object[] getFluidPatterns() {
+    @LuaDoc(group = 5, order = 2, args = "[table stack]")
+    public final Object[] getFluidPatterns(@Nonnull final Optional<Map<?, ?>> stack) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        List<FluidStack> patterns = new LinkedList<>();
-        for (ICraftingPattern pattern : network.getCraftingManager().getPatterns()) {
-            if (!pattern.getFluidOutputs().isEmpty()) {
-                patterns.addAll(pattern.getFluidOutputs());
-            }
-        }
-        return new Object[] { LuaConversion.convert(patterns) };
+        List<FluidStack> outputs = LuaConversion.getFluidStacks(stack.orElse(null), craftableFluids(network));
+        return new Object[] { LuaConversion.convert(outputs) };
     }
 
     /**
@@ -224,13 +224,14 @@ public class RefinedStoragePeripheral implements IPeripheral {
      */
     @Nonnull
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 5, order = 11, args = "table stack")
     public final Object[] hasPattern(final Map<?, ?> stack) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        ItemStack items = LuaConversion.getItemStack(stack, craftableItemsSearcher(network));
+        ItemStack items = LuaConversion.getItemStack(stack, craftableItems(network));
         return new Object[] { network.getCraftingManager().getPattern(items) != null };
     }
 
@@ -243,43 +244,42 @@ public class RefinedStoragePeripheral implements IPeripheral {
      */
     @Nonnull
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 5, order = 12, args = "table stack")
     public final Object[] hasFluidPattern(final Map<?, ?> stack) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        FluidStack fluid = LuaConversion.getFluidStack(stack, FluidAttributes.BUCKET_VOLUME,
-                craftableFluidsSearcher(network));
+        FluidStack fluid = LuaConversion.getFluidStack(stack, craftableFluids(network));
         return new Object[] { network.getCraftingManager().getPattern(fluid) != null };
     }
 
     /**
      * Schedules an item crafting task.
-     * @param args Arguments, consisting of:
-     *               * stack: table -- the item to be crafted
-     *               * [count: number] -- the number of items to be crafted (overrides count in stack)
-     *               * [canSchedule: boolean] -- if false, does not actually start the craft (just reports if it's possible)
+     * @param stack The item description, e.g. {name="minecraft:stone"}
+     * @param count The number of items to be crafted (overrides count in stack, if specified)
+     * @param canSchedule If false, does not actually start the craft (just reports if it's possible)
      * @return A table describing the crafting task (even if not actually scheduled), or null if disconnected or unable to craft.
      * @throws LuaException The request was malformed.
      * @since 1.0.0
      */
     @Nonnull
     @LuaFunction(mainThread = true)
-    public final Object[] scheduleTask(final IArguments args) throws LuaException {
+    @LuaDoc(group = 6, order = 2, args = "table stack, [number count = 1], [boolean canSchedule = true]")
+    public final Object[] scheduleTask(final Map<?, ?> stack, final Optional<Integer> count, final Optional<Boolean> canSchedule) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        ItemStack stack = LuaConversion.getItemStack(args.getTable(0), craftableItemsSearcher(network));
-        int amount = args.optInt(1, 1);
-        boolean canSchedule = args.optBoolean(2, true);
+        ItemStack output = LuaConversion.getItemStack(stack, craftableItems(network));
+        int quantity = Math.max(1, count.orElse(output.getCount()));
 
-        ICalculationResult result = network.getCraftingManager().create(stack, amount);
+        ICalculationResult result = network.getCraftingManager().create(output, quantity);
         if (result.isOk()) {
             ICraftingTask task = result.getTask();
-            if (canSchedule) {
+            if (canSchedule.orElse(true)) {
                 if (task == null) return error("Crafting task unexpectedly null when OK");
                 network.getCraftingManager().start(task);
             }
@@ -287,38 +287,37 @@ public class RefinedStoragePeripheral implements IPeripheral {
         }
 
         switch (result.getType()) {
-            case NO_PATTERN: return error("No pattern found for " + stack.getItem().getRegistryName());
-            case MISSING: return error("Required inputs missing for " + stack.getItem().getRegistryName());
-            default: return error("Crafting error for " + stack.getItem().getRegistryName());
+            case NO_PATTERN: return error("No pattern found");
+            case MISSING: return error("Inputs missing");
+            default: return error("Crafting error");
         }
     }
 
     /**
      * Schedules a fluid crafting task.
-     * @param args Arguments, consisting of:
-     *               * stack: table -- the fluid to be crafted
-     *               * [amount: number] -- the amount of fluid to be crafted (mB)
-     *               * [canSchedule: boolean] -- if false, does not actually start the craft (just reports if it's possible)
+     * @param stack The fluid description, e.g. {name="minecraft:lava"}
+     * @param amount The amount of fluid to be crafted (mB); overrides amount in stack if specified
+     * @param canSchedule If false, does not actually start the craft (just reports if it's possible)
      * @return A table describing the crafting task (even if not actually scheduled), or null if disconnected or unable to craft.
      * @throws LuaException The request was malformed.
      * @since 1.0.0
      */
     @Nonnull
     @LuaFunction(mainThread = true)
-    public final Object[] scheduleFluidTask(final IArguments args) throws LuaException {
+    @LuaDoc(group = 6, order = 3, args = "table stack, [number amount = 1000], [boolean canSchedule = true]")
+    public final Object[] scheduleFluidTask(final Map<?, ?> stack, final Optional<Integer> amount, final Optional<Boolean> canSchedule) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        FluidStack stack = LuaConversion.getFluidStack(args.getTable(0), FluidAttributes.BUCKET_VOLUME, craftableFluidsSearcher(network));
-        int amount = args.optInt(1, stack.getAmount());
-        boolean canSchedule = args.optBoolean(2, true);
+        FluidStack output = LuaConversion.getFluidStack(stack, craftableFluids(network));
+        int quantity = Math.max(1, amount.orElse(output.getAmount()));
 
-        ICalculationResult result = network.getCraftingManager().create(stack, amount);
+        ICalculationResult result = network.getCraftingManager().create(output, quantity);
         if (result.isOk()) {
             ICraftingTask task = result.getTask();
-            if (canSchedule) {
+            if (canSchedule.orElse(true)) {
                 if (task == null) return error("Crafting task unexpectedly null when OK");
                 network.getCraftingManager().start(task);
             }
@@ -326,9 +325,9 @@ public class RefinedStoragePeripheral implements IPeripheral {
         }
 
         switch (result.getType()) {
-            case NO_PATTERN: return error("No pattern found for " + stack.getFluid().getRegistryName());
-            case MISSING: return error("Required inputs missing for " + stack.getFluid().getRegistryName());
-            default: return error("Crafting error for " + stack.getFluid().getRegistryName());
+            case NO_PATTERN: return error("No pattern found");
+            case MISSING: return error("Inputs missing");
+            default: return error("Crafting error");
         }
     }
 
@@ -341,13 +340,14 @@ public class RefinedStoragePeripheral implements IPeripheral {
      */
     @Nonnull
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 6, order = 11, args = "table stack")
     public final Object[] cancelTask(final Map<?, ?> stack) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        ItemStack items = LuaConversion.getItemStack(stack, craftableItemsSearcher(network));
+        ItemStack items = LuaConversion.getItemStack(stack, craftableItems(network));
 
         int count = 0;
         for (ICraftingTask task : network.getCraftingManager().getTasks()) {
@@ -370,13 +370,14 @@ public class RefinedStoragePeripheral implements IPeripheral {
      */
     @Nonnull
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 6, order = 12, args = "table stack")
     public final Object[] cancelFluidTask(final Map<?, ?> stack) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        FluidStack fluid = LuaConversion.getFluidStack(stack, FluidAttributes.BUCKET_VOLUME, craftableFluidsSearcher(network));
+        FluidStack fluid = LuaConversion.getFluidStack(stack, craftableFluids(network));
 
         int count = 0;
         for (ICraftingTask task : network.getCraftingManager().getTasks()) {
@@ -406,14 +407,17 @@ public class RefinedStoragePeripheral implements IPeripheral {
      */
     @Nonnull
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 10, order = 2, args = "table stack, [number amount = stack.amount = 1000], [string/number direction = \"down\"]", returns = "number")
     public final Object[] extractFluid(final IArguments args) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        // First and second argument: fluid and amount.
-        FluidStack stack = LuaConversion.getFluidStack(args.getTable(0), args.optInt(1, FluidAttributes.BUCKET_VOLUME), storedFluidsSearcher(network));
+        // First argument: fluid and amount.
+        FluidStack stack = LuaConversion.getFluidStack(args.getTable(0), storedFluids(network));
+        // Second argument: amount of fluid
+        args.optInt(1).ifPresent(stack::setAmount);
         // Third argument: which direction to extract to
         Direction direction = getDirection(args, 2);
 
@@ -450,46 +454,56 @@ public class RefinedStoragePeripheral implements IPeripheral {
 
     /**
      * Gets information about a fluid from the network.
-     * @param args Arguments, consisting of:
-     *               * stack: table -- the fluid description (e.g. {name="minecraft:lava"})
-     *               * [compareNBT: boolean] -- false to ignore NBT
+     * @param stack The fluid description (e.g. {name="minecraft:lava"})
+     * @param compareNBT If false, finds the first fluid of that type, ignoring tags
+     * @param evenIfZero If true, reports default information about the fluid type even if not actually present in the network (this always ignores tags)
      * @return A table describing the fluid and how much of it is in the network,
      *         or empty if it is not in the network, or null if the network is disconnected.
      * @throws LuaException The fluid description was invalid.
-     * @since 1.0.0
+     * @since 1.0.0; 1.1.0 adds evenIfZero
      */
     @Nonnull
     @LuaFunction(mainThread = true)
-    public Object[] getFluid(final IArguments args) throws LuaException {
+    @LuaDoc(group = 2, order = 12, args = "table stack, [boolean compareNBT = true], [boolean evenIfZero = false]")
+    public Object[] getFluid(final Map<?, ?> stack, final Optional<Boolean> compareNBT, final Optional<Boolean> evenIfZero) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        FluidStack stack = LuaConversion.getFluidStack(args.getTable(0), FluidAttributes.BUCKET_VOLUME, storedFluidsSearcher(network));
-        boolean compareNBT = args.optBoolean(1, true);
+        FluidStack fluid = LuaConversion.getFluidStack(stack, storedFluids(network));
 
-        int flags = compareNBT ? IComparer.COMPARE_NBT : 0;
+        int flags = compareNBT.orElse(true) ? IComparer.COMPARE_NBT : 0;
 
-        stack = network.getFluidStorageCache().getList().get(stack, flags);
-        if (stack == null) stack = FluidStack.EMPTY;
-        return new Object[] { LuaConversion.convert(stack) };
+        fluid = storedFluids(network).get().get(fluid, flags);
+        if (fluid == null) {
+            if (evenIfZero.orElse(false)) {
+                return new Object[] { LuaConversion.convertZeroFluidStack(stack) };
+            }
+
+            fluid = FluidStack.EMPTY;
+        }
+        return new Object[] { LuaConversion.convert(fluid) };
     }
 
     /**
      * Gets a list of all fluids currently in this network.
-     * @return A table array describing all fluids present, or null if the network is disconnected.
-     * @since 1.0.0
+     * @param stack If specified, only returns fluids with the matching type (ignoring tags);
+     *              if omitted, all fluid types.
+     * @return A table array describing matching stored fluids, or null if the network is disconnected.
+     * @since 1.0.0 for method, 1.1.0 for stack parameter
      */
     @Nonnull
     @LuaFunction(mainThread = true)
-    public final Object[] getFluids() {
+    @LuaDoc(group = 2, order = 2, args = "[table stack]")
+    public final Object[] getFluids(@Nonnull final Optional<Map<?, ?>> stack) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        return new Object[] { LuaConversion.convert(network.getFluidStorageCache().getList().getStacks()) };
+        List<FluidStack> stacks = LuaConversion.getFluidStacks(stack.orElse(null), storedFluids(network));
+        return new Object[] { LuaConversion.convert(stacks) };
     }
 
     /**
@@ -508,6 +522,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
      */
     @Nonnull
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 10, order = 1, args = "table stack, [number count = stack.count = 1], [string/number direction = \"down\"]", returns = "number")
     public final Object[] extractItem(final IArguments args) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
@@ -515,7 +530,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
         }
 
         // First argument: the item stack to extract
-        ItemStack stack = LuaConversion.getItemStack(args.getTable(0), storedItemsSearcher(network));
+        ItemStack stack = LuaConversion.getItemStack(args.getTable(0), storedItems(network));
         // Second argument: the number of items to extract, at least 1 ...
         int count = args.optInt(1, stack.getCount());
         // Third argument: which direction to extract to
@@ -564,47 +579,58 @@ public class RefinedStoragePeripheral implements IPeripheral {
     }
 
     /**
-     * Gets information about an item from the network.
-     * @param args Arguments, consisting of:
-     *               * stack: table -- the item description (e.g. {name="minecraft:stone"})
-     *               * [compareNBT: boolean] -- false to ignore NBT
+     * Gets information about an tem from the network.
+     * @param stack The item description (e.g. {name="minecraft:stone"})
+     * @param compareNBT If false, finds the first item of that type, ignoring tags
+     * @param evenIfZero If true, reports default information about the item type even if not actually present in the network (this always ignores tags)
      * @return A table describing the item and how much of it is in the network,
      *         or empty if it is not in the network, or null if the network is disconnected.
      * @throws LuaException The item description was invalid.
-     * @since 1.0.0
+     * @since 1.0.0; 1.1.0 adds evenIfZero
      */
     @Nonnull
     @LuaFunction(mainThread = true)
-    public Object[] getItem(final IArguments args) throws LuaException {
+    @LuaDoc(group = 2, order = 11, args = "table stack, [boolean compareNBT = true], [boolean evenIfZero = false]")
+    public Object[] getItem(final Map<?, ?> stack, final Optional<Boolean> compareNBT, final Optional<Boolean> evenIfZero) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        ItemStack stack = LuaConversion.getItemStack(args.getTable(0), storedItemsSearcher(network));
-        boolean compareNBT = args.optBoolean(1, true);
+        ItemStack item = LuaConversion.getItemStack(stack, storedItems(network));
 
-        int flags = compareNBT ? IComparer.COMPARE_NBT : 0;
+        int flags = compareNBT.orElse(true) ? IComparer.COMPARE_NBT : 0;
 
-        stack = network.getItemStorageCache().getList().get(stack, flags);
-        if (stack == null) stack = ItemStack.EMPTY;
-        return new Object[] { LuaConversion.convert(stack) };
+        item = storedItems(network).get().get(item, flags);
+        if (item == null) {
+            if (evenIfZero.orElse(false)) {
+                // this requires special treatment because ItemStack treats zero counts as empty
+                return new Object[] { LuaConversion.convertZeroItemStack(stack) };
+            }
+
+            item = ItemStack.EMPTY;
+        }
+        return new Object[] { LuaConversion.convert(item) };
     }
 
     /**
      * Gets a list of all items currently in this network.
-     * @return A table array describing all items present, or null if the network is disconnected.
-     * @since 1.0.0
+     * @param stack If specified, only returns items with the matching type (ignoring tags);
+     *              if omitted, all item types.
+     * @return A table array describing matching stored items, or null if the network is disconnected.
+     * @since 1.0.0 for method, 1.1.0 for stack parameter
      */
     @Nonnull
     @LuaFunction(mainThread = true)
-    public final Object[] getItems() {
+    @LuaDoc(group = 2, order = 1, args = "[table stack]")
+    public final Object[] getItems(@Nonnull final Optional<Map<?, ?>> stack) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
         }
 
-        return new Object[] { LuaConversion.convert(network.getItemStorageCache().getList().getStacks()) };
+        List<ItemStack> stacks = LuaConversion.getItemStacks(stack.orElse(null), storedItems(network));
+        return new Object[] { LuaConversion.convert(stacks) };
     }
 
     /**
@@ -614,6 +640,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
      */
     @Nonnull
     @LuaFunction(mainThread = true)
+    @LuaDoc(group = 1, order = 20)
     public final Object[] getStorages() {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
@@ -689,6 +716,7 @@ public class RefinedStoragePeripheral implements IPeripheral {
         return new Object[] { null, message };
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static Direction getDirection(IArguments args, int index) throws LuaException {
         Object directionArg = args.get(index);
         if (directionArg instanceof String) {
@@ -699,19 +727,19 @@ public class RefinedStoragePeripheral implements IPeripheral {
         return Direction.DOWN;
     }
 
-    private static Supplier<IStackList<ItemStack>> storedItemsSearcher(INetwork network) {
+    private static Supplier<IStackList<ItemStack>> storedItems(INetwork network) {
         return () -> network.getItemStorageCache().getList();
     }
 
-    private static Supplier<IStackList<ItemStack>> craftableItemsSearcher(INetwork network) {
+    private static Supplier<IStackList<ItemStack>> craftableItems(INetwork network) {
         return () -> network.getItemStorageCache().getCraftablesList();
     }
 
-    private static Supplier<IStackList<FluidStack>> storedFluidsSearcher(INetwork network) {
+    private static Supplier<IStackList<FluidStack>> storedFluids(INetwork network) {
         return () -> network.getFluidStorageCache().getList();
     }
 
-    private static Supplier<IStackList<FluidStack>> craftableFluidsSearcher(INetwork network) {
+    private static Supplier<IStackList<FluidStack>> craftableFluids(INetwork network) {
         return () -> network.getFluidStorageCache().getCraftablesList();
     }
 }

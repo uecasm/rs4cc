@@ -1,0 +1,28 @@
+For more detailed information, see the wiki at https://github.com/uecasm/rs4cc/wiki
+
+The refinedstorage API is only available when a Refined Storage Peripheral is attached to the computer at startup.  This assumes that you only have one such peripheral attached.
+Note that the global API may misbehave if you move the Peripheral block while the computer is running.  To recover from this, just restart the computer by holding Ctrl+R or reloading your save.
+
+If you do want to interact with multiple separate systems (e.g. a subnetwork), then you should use "peripheral.wrap" as normal, which will provide the same API.
+
+Functions in the refinedstorage API:
+refinedstorage.isConnected() => boolean
+refinedstorage.getEnergyUsage() => number
+refinedstorage.getStorages() => table
+refinedstorage.getItems([table stack]) => table
+refinedstorage.getFluids([table stack]) => table
+refinedstorage.getItem(table stack, [boolean compareNBT = true], [boolean evenIfZero = false]) => table
+refinedstorage.getFluid(table stack, [boolean compareNBT = true], [boolean evenIfZero = false]) => table
+refinedstorage.getPatterns([table stack]) => table
+refinedstorage.getFluidPatterns([table stack]) => table
+refinedstorage.hasPattern(table stack) => table
+refinedstorage.hasFluidPattern(table stack) => table
+refinedstorage.getPattern(table stack) => table
+refinedstorage.getFluidPattern(table stack) => table
+refinedstorage.getTasks() => table
+refinedstorage.scheduleTask(table stack, [number count = 1], [boolean canSchedule = true]) => table
+refinedstorage.scheduleFluidTask(table stack, [number amount = 1000], [boolean canSchedule = true]) => table
+refinedstorage.cancelTask(table stack) => table
+refinedstorage.cancelFluidTask(table stack) => table
+refinedstorage.extractItem(table stack, [number count = stack.count = 1], [string/number direction = "down"]) => number
+refinedstorage.extractFluid(table stack, [number amount = stack.amount = 1000], [string/number direction = "down"]) => number

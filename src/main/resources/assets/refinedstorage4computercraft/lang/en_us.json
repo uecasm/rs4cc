@@ -2,5 +2,9 @@
   "block.refinedstorage4computercraft.peripheral": "Refined Storage Peripheral",
   "block.refinedstorage4computercraft.peripheral.ui": "CC Peripheral",
   "advancements.refinedstorage4computercraft:peripheral": "Computer Interfacing",
-  "advancements.refinedstorage4computercraft:peripheral.description": "Craft a Refined Storage Peripheral, to access your RS system from ComputerCraft computers"
+  "advancements.refinedstorage4computercraft:peripheral.description": "Craft a Refined Storage Peripheral, to access your RS system from ComputerCraft computers",
+  "config.refinedstorage4computercraft.peripheral.baseUsage": "Base RF/t used by the Peripheral",
+  "config.refinedstorage4computercraft.peripheral.perComputerUsage": "RF/t used by the Peripheral per connected computer",
+  "config.refinedstorage4computercraft.tags.allowJson": "Expose plain JSON tag data",
+  "config.refinedstorage4computercraft.tags.allowEncoded": "Expose full encoded tag data"
 }
