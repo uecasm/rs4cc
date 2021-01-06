@@ -1,0 +1,26 @@
+{
+  "display": {
+    "icon": {
+      "item": "storage4computercraft:rs_peripheral"
+    },
+    "title": {
+      "translate": "advancements.storage4computercraft:rs_peripheral"
+    },
+    "description": {
+      "translate": "advancements.storage4computercraft:rs_peripheral.description"
+    }
+  },
+  "parent": "refinedstorage:interface_to_the_world",
+  "criteria": {
+    "peripheral_in_inventory": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "storage4computercraft:rs_peripheral"
+          }
+        ]
+      }
+    }
+  }
+}

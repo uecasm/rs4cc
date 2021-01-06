@@ -1,0 +1,21 @@
+For more detailed information, see the wiki at https://github.com/uecasm/rs4cc/wiki
+
+The ae2 API is only available when an ME Peripheral is attached to the computer at startup.  This assumes that you only have one such peripheral attached.
+Note that the global API may misbehave if you move the Peripheral block while the computer is running.  To recover from this, just restart the computer by holding Ctrl+R or reloading your save.
+
+If you do want to interact with multiple separate systems (e.g. a subnetwork), then you should use "peripheral.wrap" as normal, which will provide the same API.
+
+Functions in the ae2 API:
+ae2.isConnected() => boolean
+ae2.getEnergyUsage() => number
+ae2.getEnergyStorage() => number
+ae2.getInventory() => table
+ae2.getItems([table stack]) => table
+ae2.getFluids([table stack]) => table
+ae2.getItem(table stack, [boolean compareNBT = true], [boolean evenIfZero = false]) => table
+ae2.getFluid(table stack, [boolean compareNBT = true], [boolean evenIfZero = false]) => table
+ae2.getCraftingCPUs() => table
+ae2.getPatterns(table stack) => table
+ae2.scheduleTask(table stack, [number count = stack.count = 1], [boolean canSchedule = true], [string preferredCpu = nil]) => table
+ae2.extractItem(table stack, [number count = stack.count = 1], [string/number direction = "down"]) => number
+ae2.extractFluid(table stack, [number amount = stack.amount = 1000], [string/number direction = "down"]) => number

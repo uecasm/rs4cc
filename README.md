@@ -8,6 +8,6 @@ It is based on (and mostly compatible with) the OpenComputers API that was imple
 
 ## Contributions
 
-Language files in particular are very welcome -- submit a Pull Request with the new files or other changes.  You can see a list of existing translations [here](src/main/resources/assets/refinedstorage4computercraft/lang).
+Language files in particular are very welcome -- submit a Pull Request with the new files or other changes.  You can see a list of existing translations [here](src/main/resources/assets/storage4computercraft/lang).
 
 Other suggestions, bug reports, and pull requests are also welcome, but please do your research first!

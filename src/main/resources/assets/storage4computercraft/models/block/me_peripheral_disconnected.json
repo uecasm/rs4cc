@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "storage4computercraft:block/me_peripheral_disconnected"
+  }
+}

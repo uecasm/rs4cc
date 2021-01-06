@@ -21,6 +21,7 @@ build
 eclipse
 run
 logs
+mods-*
 mcmodsrepo
 
 # Files from Forge MDK

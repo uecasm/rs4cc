@@ -1,0 +1,39 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {
+          "type": "forge:mod_loaded",
+          "modid": "appliedenergistics2"
+        }
+      ],
+      "recipe": {
+        "type": "minecraft:crafting_shaped",
+        "pattern": [
+          "#M#",
+          "CIC",
+          "#M#"
+        ],
+        "key": {
+          "#": [
+            { "tag": "appliedenergistics2:smart_dense_cable" },
+            { "tag": "appliedenergistics2:covered_dense_cable" }
+          ],
+          "I": {
+            "item": "appliedenergistics2:interface"
+          },
+          "C": {
+            "item": "appliedenergistics2:crafting_unit"
+          },
+          "M": {
+            "item": "computercraft:wired_modem"
+          }
+        },
+        "result": {
+          "item": "storage4computercraft:me_peripheral"
+        }
+      }
+    }
+  ]
+}

@@ -8,6 +8,7 @@ If you do want to interact with multiple separate systems (e.g. a subnetwork), t
 Functions in the refinedstorage API:
 refinedstorage.isConnected() => boolean
 refinedstorage.getEnergyUsage() => number
+refinedstorage.getEnergyStorage() => number
 refinedstorage.getStorages() => table
 refinedstorage.getItems([table stack]) => table
 refinedstorage.getFluids([table stack]) => table

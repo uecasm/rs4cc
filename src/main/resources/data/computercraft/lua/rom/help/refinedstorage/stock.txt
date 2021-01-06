@@ -17,6 +17,7 @@ Commands:
   - fluid "NAME" N : changes or adds NAME to be stocked to N buckets
   - delete N       : deletes the stock request for the Nth item (see the list)
   - move A B       : moves item #A to position #B
+  - clean          : deletes any items that can't be loaded (e.g. after removing mods)
   - start          : starts the autostock program (in the background, if possible)
 
 If no command is specified then it runs "list" by default.

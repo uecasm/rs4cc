@@ -13,9 +13,11 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
+def extraModsDir = "mods-${minecraft_version}"
+
 version = "${mod_version}"
 group = 'mirality'
-archivesBaseName = "RefinedStorage4ComputerCraft-${minecraft_version}"
+archivesBaseName = "Storage4ComputerCraft-${minecraft_version}"
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
@@ -33,9 +35,10 @@ minecraft {
             //property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.disableRefMap', 'true'
 
             mods {
-                refinedstorage4computercraft {
+                storage4computercraft {
                     source sourceSets.main
                 }
             }
@@ -46,9 +49,10 @@ minecraft {
 
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.disableRefMap', 'true'
 
             mods {
-                refinedstorage4computercraft {
+                storage4computercraft {
                     source sourceSets.main
                 }
             }
@@ -59,11 +63,12 @@ minecraft {
 
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
-            
-            args '--mod', 'refinedstorage4computercraft', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            property 'mixin.env.disableRefMap', 'true'
+
+            args '--mod', 'storage4computercraft', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
             mods {
-                refinedstorage4computercraft {
+                storage4computercraft {
                     source sourceSets.main
                 }
             }
@@ -88,6 +93,10 @@ processResources {
 }
 
 repositories {
+    flatDir {
+        name "extra-mods"
+        dir file(extraModsDir)
+    }
     maven {
         name 'TOP'
         url 'https://maven.tterrag.com/'
@@ -101,34 +110,46 @@ repositories {
         url 'https://repo.refinedmods.com'
     }
     maven {
-        name 'CC Tweaked'
-        url 'https://squiddev.cc/maven/'
+        name 'AE2'
+        url 'https://modmaven.dev/'
     }
     maven {
-        name 'CurseMaven'
-        url 'https://www.cursemaven.com/'
+        name 'CC Tweaked'
+        url 'https://squiddev.cc/maven/'
     }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    compile fg.deobf("com.refinedmods:refinedstorage:${rs_version}")
     compile fg.deobf("org.squiddev:cc-tweaked-${minecraft_version}:${cc_version}")
 
-    runtimeOnly fg.deobf("com.refinedmods:refinedpipes:0.5+5")
+    compileOnly fg.deobf("com.refinedmods:refinedstorage:${rs_version}")
+    compileOnly fg.deobf("appeng:appliedenergistics2:${ae2_version}:api")
+    compileOnly fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}:api")
+
+    // these are separate so we can test without them loaded
+    runtimeOnly fg.deobf("com.refinedmods:refinedstorage:${rs_version}")
+    runtimeOnly fg.deobf("appeng:appliedenergistics2:${ae2_version}")
     runtimeOnly fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}")
     runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}:${jei_version}")
-    runtimeOnly fg.deobf("curse.maven:cyclic-239286:${cy_fileid}")
-    //runtimeOnly fg.deobf("curse.maven:chisel-231095:3133859")
-    runtimeOnly fg.deobf("curse.maven:immersive-231951:3101446")
+
+    // extra mods for testing
+    for (mod in fileTree(dir: extraModsDir, include: '*.jar')) {
+        def basename = mod.name.substring(0, mod.name.length() - ".jar".length())
+        def sep = basename.lastIndexOf('-')
+        assert sep != -1
+        def name = basename.substring(0, sep)
+        def version = basename.substring(sep + 1)
+        runtimeOnly fg.deobf("extra-mods:$name:$version")
+    }
 }
 
 jar {
     manifest {
         attributes([
-            "Specification-Title": "refinedstorage4computercraft",
-            "Specification-Vendor": "refinedmods",
+            "Specification-Title": "storage4computercraft",
+            "Specification-Vendor": "Mirality",
             "Specification-Version": "1",
             "Implementation-Title": project.name,
             "Implementation-Version": "${version}",

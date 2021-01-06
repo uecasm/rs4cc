@@ -82,6 +82,18 @@ local function list(filter)
     textutils.pagedPrint(table.concat(display, "\n"), height - 3)
 end
 
+local function clean()
+    local stock = settings.getStock()
+    for i = #stock,1,-1 do
+        local handlers, stack = settings.getHandlers(stock[i])
+        if not handlers or not pcall(getName, stock[i], handlers) then
+            table.remove(stock, i)
+        end
+    end
+    settings.setStock(stock)
+    print("Done")
+end
+
 local function setQuantity(name, quantity, handlers)
     expect(1, name, "string")
     expect(2, quantity, "number")
@@ -180,6 +192,9 @@ if tArgs[1] == "list" and #tArgs == 1 then
     -- "stock list"
     print("Stock list:")
     list()
+elseif tArgs[1] == "clean" and #tArgs == 1 then
+    -- "stock clean"
+    clean()
 elseif tArgs[1] == "refresh" and #tArgs == 1 then
     -- "stock refresh"
     print("AutoStock refresh rate is", settings.getRefresh(), "seconds")

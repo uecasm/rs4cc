@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "connected=true": {
+      "model": "storage4computercraft:block/me_peripheral_connected"
+    },
+    "connected=false,overloaded=false": {
+      "model": "storage4computercraft:block/me_peripheral_disconnected"
+    },
+    "connected=false,overloaded=true": {
+      "model": "storage4computercraft:block/me_peripheral_overloaded"
+    }
+  }
+}

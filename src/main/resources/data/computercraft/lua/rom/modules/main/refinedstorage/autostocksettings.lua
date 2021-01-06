@@ -80,7 +80,7 @@ local handlers = {
         setQuantity = function (stack, value) stack.amount = value * 1000 end,
         formatQuantity = function (quantity) return string.format("%.1fB", quantity / 1000) end,
         find = function (stack) return refinedstorage.getFluid(stack, true, true) end,
-        all = function () return refinedstorage.getItems() end,
+        all = function () return refinedstorage.getFluids() end,
         findPattern = function (stack) return refinedstorage.getFluidPattern(stack) end,
         craft = function (stack, quantity) return refinedstorage.scheduleFluidTask(stack, quantity) end,
     },
