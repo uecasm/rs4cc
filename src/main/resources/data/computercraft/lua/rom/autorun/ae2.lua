@@ -7,6 +7,6 @@ if ae2 then
     help.setPath(help.path() .. ":/rom/help/ae2")
 
     shell.setCompletionFunction("rom/programs/ae2/stock.lua", completion.build(
-        { completion.choice, { "list", "item ", "fluid ", "delete ", "refresh", "refresh ", "clean", "start" } }
+        { completion.choice, { "list", "item ", "fluid ", "delete ", "move ", "refresh", "refresh ", "clean", "start" } }
     ))
 end
