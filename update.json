@@ -1,10 +1,11 @@
 {
   "homepage": "https://github.com/uecasm/rs4cc/releases",
   "promos": {
-    "1.16.4-latest": "1.2.0",
+    "1.16.4-latest": "1.2.1",
     "1.16.4-recommended": "1.1.0"
   },
   "1.16.4": {
+    "1.2.1": "Fixes crash when breaking connected RS peripheral",
     "1.2.0": "Adds optional Applied Energistics 2 support",
     "1.1.0": "Includes autostock program and help files",
     "1.0.0": "Initial release for Minecraft 1.16.4"

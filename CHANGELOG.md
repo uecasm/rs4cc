@@ -1,5 +1,9 @@
 # Storage for ComputerCraft Changelog
 
+### 1.2.1
+
+- Fixed a crash introduced in 1.2.0 if the RS Peripheral block is broken while connected to a computer network. 
+
 ### 1.2.0
 
 - (Not breaking, unless you try to downgrade) The mod has been renamed from "Refined Storage for ComputerCraft" to just "Storage for ComputerCraft" (due to the following change).  All the blocks have been renamed too, but existing worlds will upgrade cleanly to the new version without losing anything.

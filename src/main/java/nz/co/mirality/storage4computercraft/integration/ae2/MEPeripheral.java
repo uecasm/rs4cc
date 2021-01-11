@@ -324,7 +324,7 @@ public class MEPeripheral implements IPeripheral {
     @Nonnull
     @LuaFunction(mainThread = true)
     @LuaDoc(group = 2, order = 12, args = "table stack, [boolean compareNBT = true], [boolean evenIfZero = false]")
-    public Object[] getFluid(final Map<?, ?> stack, final Optional<Boolean> compareNBT, final Optional<Boolean> evenIfZero) throws LuaException {
+    public final Object[] getFluid(final Map<?, ?> stack, final Optional<Boolean> compareNBT, final Optional<Boolean> evenIfZero) throws LuaException {
         IGrid grid = this.grid.getOnlineGrid();
         if (grid == null) {
             return disconnected();
@@ -459,7 +459,7 @@ public class MEPeripheral implements IPeripheral {
     @Nonnull
     @LuaFunction(mainThread = true)
     @LuaDoc(group = 2, order = 11, args = "table stack, [boolean compareNBT = true], [boolean evenIfZero = false]")
-    public Object[] getItem(final Map<?, ?> stack, final Optional<Boolean> compareNBT, final Optional<Boolean> evenIfZero) throws LuaException {
+    public final Object[] getItem(final Map<?, ?> stack, final Optional<Boolean> compareNBT, final Optional<Boolean> evenIfZero) throws LuaException {
         IGrid grid = this.grid.getOnlineGrid();
         if (grid == null) {
             return disconnected();

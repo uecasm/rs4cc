@@ -56,14 +56,16 @@ public class RSPeripheral implements IPeripheral {
     public void attach(@Nonnull IComputerAccess computer) {
         RS4CC.LOGGER.debug("Attached computer {} to network", computer.getID());
 
-        ServerWorker.add(() -> this.getNode().computerConnected());
+        RSPeripheralNetworkNode node = this.getNode();
+        ServerWorker.add(node::computerConnected);
     }
 
     @Override
     public void detach(@Nonnull IComputerAccess computer) {
         RS4CC.LOGGER.debug("Detached computer {} from network", computer.getID());
 
-        ServerWorker.add(() -> this.getNode().computerDisconnected());
+        RSPeripheralNetworkNode node = this.getNode();
+        ServerWorker.add(node::computerDisconnected);
     }
 
     @Nullable
@@ -483,7 +485,7 @@ public class RSPeripheral implements IPeripheral {
     @Nonnull
     @LuaFunction(mainThread = true)
     @LuaDoc(group = 2, order = 12, args = "table stack, [boolean compareNBT = true], [boolean evenIfZero = false]")
-    public Object[] getFluid(final Map<?, ?> stack, final Optional<Boolean> compareNBT, final Optional<Boolean> evenIfZero) throws LuaException {
+    public final Object[] getFluid(final Map<?, ?> stack, final Optional<Boolean> compareNBT, final Optional<Boolean> evenIfZero) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
@@ -601,7 +603,7 @@ public class RSPeripheral implements IPeripheral {
     @Nonnull
     @LuaFunction(mainThread = true)
     @LuaDoc(group = 2, order = 11, args = "table stack, [boolean compareNBT = true], [boolean evenIfZero = false]")
-    public Object[] getItem(final Map<?, ?> stack, final Optional<Boolean> compareNBT, final Optional<Boolean> evenIfZero) throws LuaException {
+    public final Object[] getItem(final Map<?, ?> stack, final Optional<Boolean> compareNBT, final Optional<Boolean> evenIfZero) throws LuaException {
         INetwork network = this.getNetwork();
         if (!isConnected(network)) {
             return disconnected();
