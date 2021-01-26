@@ -3,6 +3,7 @@
 ### 1.2.2
 
 - Refined Storage is now an optional dependency as well.
+- Added support for WAILA/HWYLA tooltips as well.
 - It seems stable enough to call this a release now.
 
 ### 1.2.1
@@ -13,6 +14,7 @@
 
 - (Not breaking, unless you try to downgrade) The mod has been renamed from "Refined Storage for ComputerCraft" to just "Storage for ComputerCraft" (due to the following change).  All the blocks have been renamed too, but existing worlds will upgrade cleanly to the new version without losing anything.
 - Added experimental support for Applied Energistics 2 ME networks.  The `ae2` API is similar (but not quite identical, due to different feature sets) to the `refinedstorage` API.
+- Added TheOneProbe tooltip support.
 
 ### 1.1.0
 

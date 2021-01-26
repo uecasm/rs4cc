@@ -102,6 +102,10 @@ repositories {
         url 'https://maven.tterrag.com/'
     }
     maven {
+        name 'HWYLA'
+        url 'https://maven.tehnut.info'
+    }
+    maven {
         name 'JEI'
         url 'https://dvs1.progwml6.com/files/maven'
     }
@@ -127,11 +131,13 @@ dependencies {
     compileOnly fg.deobf("com.refinedmods:refinedstorage:${rs_version}")
     compileOnly fg.deobf("appeng:appliedenergistics2:${ae2_version}:api")
     compileOnly fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}:api")
+    compileOnly fg.deobf("mcp.mobius.waila:Hwyla:${hwyla_version}:api")
 
     // these are separate so we can test without them loaded
     runtimeOnly fg.deobf("com.refinedmods:refinedstorage:${rs_version}")
     runtimeOnly fg.deobf("appeng:appliedenergistics2:${ae2_version}")
     runtimeOnly fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}")
+    runtimeOnly fg.deobf("mcp.mobius.waila:Hwyla:${hwyla_version}")
     runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}:${jei_version}")
 
     // extra mods for testing
