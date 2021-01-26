@@ -12,6 +12,20 @@ This peripheral allows you to perform similar sorts of queries and crafting requ
 
 This is based on (but not quite identical to, since they have different features) the RS API above, so only small changes should be needed to convert programs between the two.
 
+## For Players
+
+The mod can be downloaded from [CurseForge](https://www.curseforge.com/minecraft/mc-mods/refined-storage-for-computercraft) and installed like any other mod.
+
+## For Developers
+
+#### Building
+
+It builds using gradle/gradlew, like most other mods.  There are no special steps.
+
+#### Maven
+
+I'm not currently expecting there would be any reason for someone to base another mod on top of this one, so I haven't published any API or Maven repository.  Let me know if you think there might be some reason to. 
+
 ## Contributions
 
 Language files in particular are very welcome -- submit a Pull Request with the new files or other changes.  You can see a list of existing translations [here](src/main/resources/assets/storage4computercraft/lang).

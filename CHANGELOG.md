@@ -1,5 +1,10 @@
 # Storage for ComputerCraft Changelog
 
+### 1.2.2
+
+- Refined Storage is now an optional dependency as well.
+- It seems stable enough to call this a release now.
+
 ### 1.2.1
 
 - Fixed a crash introduced in 1.2.0 if the RS Peripheral block is broken while connected to a computer network. 
