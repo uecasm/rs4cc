@@ -1,10 +1,17 @@
 {
-  "homepage": "https://github.com/uecasm/rs4cc/releases",
+  "homepage": "https://www.curseforge.com/minecraft/mc-mods/storage-for-computercraft",
   "promos": {
-    "1.16.4-latest": "1.2.1",
-    "1.16.4-recommended": "1.1.0"
+    "1.16.5-latest": "1.2.2",
+    "1.16.5-recommended": "1.2.2",
+    "1.16.4-latest": "1.2.2",
+    "1.16.4-recommended": "1.2.2"
+  },
+  "1.16.5": {
+    "1.2.2": "Refined Storage is now optional too; adds HWYLA support",
+    "1.2.1": "Fixes crash when breaking connected RS peripheral"
   },
   "1.16.4": {
+    "1.2.2": "Refined Storage is now optional too; adds HWYLA support",
     "1.2.1": "Fixes crash when breaking connected RS peripheral",
     "1.2.0": "Adds optional Applied Energistics 2 support",
     "1.1.0": "Includes autostock program and help files",
