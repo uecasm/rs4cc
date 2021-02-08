@@ -1,4 +1,4 @@
-# Storage for ComputerCraft [![](http://cf.way2muchnoise.eu/432182.svg)](https://www.curseforge.com/minecraft/mc-mods/refined-storage-for-computercraft) [![](http://cf.way2muchnoise.eu/versions/432182.svg)](https://www.curseforge.com/minecraft/mc-mods/refined-storage-for-computercraft)
+# Storage for ComputerCraft [![](http://cf.way2muchnoise.eu/432182.svg)](https://www.curseforge.com/minecraft/mc-mods/storage-for-computercraft) [![](http://cf.way2muchnoise.eu/versions/432182.svg)](https://www.curseforge.com/minecraft/mc-mods/storage-for-computercraft)
 
 **Provides a new _Refined Storage Peripheral_ block that can interface as a peripheral to ComputerCraft or CC: Tweaked computers and turtles (either directly or via modem).**
 
@@ -14,7 +14,7 @@ This is based on (but not quite identical to, since they have different features
 
 ## For Players
 
-The mod can be downloaded from [CurseForge](https://www.curseforge.com/minecraft/mc-mods/refined-storage-for-computercraft) and installed like any other mod.
+The mod can be downloaded from [CurseForge](https://www.curseforge.com/minecraft/mc-mods/storage-for-computercraft) and installed like any other mod.
 
 ## For Developers
 

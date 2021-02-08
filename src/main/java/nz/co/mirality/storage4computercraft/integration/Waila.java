@@ -11,6 +11,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import nz.co.mirality.storage4computercraft.RS4CC;
 import nz.co.mirality.storage4computercraft.blocks.MEPeripheralBlock;
 import nz.co.mirality.storage4computercraft.blocks.RSPeripheralBlock;
@@ -38,7 +39,7 @@ public class Waila implements IWailaPlugin {
 
         @Override
         public void appendTail(List<ITextComponent> tooltip, IDataAccessor accessor, IPluginConfig config) {
-            ListNBT data = (ListNBT) accessor.getServerData().get("probedata");
+            ListNBT data = accessor.getServerData().getList("probedata", Constants.NBT.TAG_STRING);
             if (data != null) {
                 for (INBT item : data) {
                     tooltip.add(ITextComponent.Serializer.getComponentFromJson(item.getString()));

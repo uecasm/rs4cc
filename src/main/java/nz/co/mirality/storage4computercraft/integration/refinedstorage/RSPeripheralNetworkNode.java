@@ -1,13 +1,18 @@
 package nz.co.mirality.storage4computercraft.integration.refinedstorage;
 
+import com.refinedmods.refinedstorage.api.network.INetwork;
+import com.refinedmods.refinedstorage.apiimpl.network.node.ConnectivityStateChangeCause;
 import com.refinedmods.refinedstorage.apiimpl.network.node.NetworkNode;
-import nz.co.mirality.storage4computercraft.RS4CC;
-import nz.co.mirality.storage4computercraft.RS4CCConfig;
+import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import nz.co.mirality.storage4computercraft.RS4CC;
+import nz.co.mirality.storage4computercraft.RS4CCConfig;
+import nz.co.mirality.storage4computercraft.RS4CCRegistry;
+import nz.co.mirality.storage4computercraft.blocks.RSPeripheralBlock;
 
 import javax.annotation.Nonnull;
 
@@ -51,5 +56,20 @@ public class RSPeripheralNetworkNode extends NetworkNode {
     public int getEnergyUsage() {
         RS4CCConfig.RSPeripheral config = RS4CC.CONFIG.getRSPeripheral();
         return config.getBaseUsage() + count * config.getPerComputerUsage();
+    }
+
+    @Override
+    protected void onConnectedStateChange(INetwork network, boolean state, ConnectivityStateChangeCause cause) {
+        super.onConnectedStateChange(network, state, cause);
+
+        BlockState blockState = this.world.getBlockState(this.pos);
+        if (blockState.getBlock().matchesBlock(RS4CCRegistry.RS_PERIPHERAL_BLOCK.get())) {
+            boolean wasOnline = blockState.get(RSPeripheralBlock.CONNECTED);
+
+            if (wasOnline != state) {
+                this.world.setBlockState(this.pos, blockState
+                        .with(RSPeripheralBlock.CONNECTED, state));
+            }
+        }
     }
 }
