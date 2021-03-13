@@ -1,14 +1,17 @@
 buildscript {
     repositories {
         maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
         jcenter()
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
+        classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
@@ -19,7 +22,7 @@ version = "${mod_version}"
 group = 'mirality'
 archivesBaseName = "Storage4ComputerCraft-${minecraft_version}"
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+java.toolchain.languageVersion = JavaLanguageVersion.of(8) // Mojang ships Java 8 to end users, so your mod should target Java 8.
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
@@ -35,7 +38,7 @@ minecraft {
             //property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
-            property 'mixin.env.disableRefMap', 'true'
+            //property 'mixin.env.disableRefMap', 'true'
 
             mods {
                 storage4computercraft {
@@ -49,7 +52,7 @@ minecraft {
 
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
-            property 'mixin.env.disableRefMap', 'true'
+            //property 'mixin.env.disableRefMap', 'true'
 
             mods {
                 storage4computercraft {
@@ -63,7 +66,7 @@ minecraft {
 
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
-            property 'mixin.env.disableRefMap', 'true'
+            //property 'mixin.env.disableRefMap', 'true'
 
             args '--mod', 'storage4computercraft', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
@@ -96,49 +99,70 @@ repositories {
     flatDir {
         name "extra-mods"
         dir file(extraModsDir)
+        content {
+            includeGroup 'extra-mods'
+        }
     }
     maven {
         name 'TOP'
         url 'https://maven.tterrag.com/'
+        content {
+            includeGroup 'mcjty.theoneprobe'
+        }
     }
     maven {
         name 'HWYLA'
         url 'https://maven.tehnut.info'
+        content {
+            includeGroup 'mcp.mobius.waila'
+        }
     }
     maven {
         name 'JEI'
         url 'https://dvs1.progwml6.com/files/maven'
+        content {
+            includeGroup 'mezz.jei'
+        }
     }
     maven {
         name 'RS maven'
         url 'https://repo.refinedmods.com'
+        content {
+            includeGroup 'com.refinedmods'
+        }
     }
     maven {
         name 'AE2'
         url 'https://modmaven.dev/'
+        content {
+            includeGroup 'appeng'
+        }
     }
     maven {
         name 'CC Tweaked'
         url 'https://squiddev.cc/maven/'
+        content {
+            includeGroup 'org.squiddev'
+        }
     }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    compile fg.deobf("org.squiddev:cc-tweaked-${minecraft_version}:${cc_version}")
+    compile "org.squiddev:cc-tweaked-${minecraft_version}:${cc_version}"
 
-    compileOnly fg.deobf("com.refinedmods:refinedstorage:${rs_version}")
-    compileOnly fg.deobf("appeng:appliedenergistics2:${ae2_version}:api")
-    compileOnly fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}:api")
-    compileOnly fg.deobf("mcp.mobius.waila:Hwyla:${hwyla_version}:api")
+    compileOnly "com.refinedmods:refinedstorage:${rs_version}"
+    compileOnly "appeng:appliedenergistics2:${ae2_version}:api"
+    compileOnly "mcjty.theoneprobe:TheOneProbe-${top_version}:api"
+    compileOnly "mcp.mobius.waila:Hwyla:${hwyla_version}:api"
 
     // these are separate so we can test without them loaded
-    runtimeOnly fg.deobf("com.refinedmods:refinedstorage:${rs_version}")
-    runtimeOnly fg.deobf("appeng:appliedenergistics2:${ae2_version}")
-    runtimeOnly fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}")
-    runtimeOnly fg.deobf("mcp.mobius.waila:Hwyla:${hwyla_version}")
-    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}:${jei_version}")
+    runtimeOnly "com.refinedmods:refinedstorage:${rs_version}"
+    runtimeOnly "appeng:appliedenergistics2:${ae2_version}"
+    runtimeOnly "mcjty.theoneprobe:TheOneProbe-${top_version}"
+    runtimeOnly "mcp.mobius.waila:Hwyla:${hwyla_version}"
+    runtimeOnly "mezz.jei:jei-${minecraft_version}:${jei_version}"
 
     // extra mods for testing
     for (mod in fileTree(dir: extraModsDir, include: '*.jar')) {
@@ -147,7 +171,7 @@ dependencies {
         assert sep != -1
         def name = basename.substring(0, sep)
         def version = basename.substring(sep + 1)
-        runtimeOnly fg.deobf("extra-mods:$name:$version")
+        runtimeOnly "extra-mods:$name:$version"
     }
 }
 
