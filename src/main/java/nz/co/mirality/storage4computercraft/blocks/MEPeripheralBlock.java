@@ -18,13 +18,13 @@ public class MEPeripheralBlock extends BasePeripheralBlock {
     public MEPeripheralBlock() {
         super();
 
-        this.setDefaultState(this.getDefaultState()
-                .with(OVERLOADED, false));
+        this.registerDefaultState(this.defaultBlockState()
+                .setValue(OVERLOADED, false));
     }
 
     @Override
-    protected void fillStateContainer(@Nonnull StateContainer.Builder<Block, BlockState> builder) {
-        super.fillStateContainer(builder);
+    protected void createBlockStateDefinition(@Nonnull StateContainer.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
 
         builder.add(OVERLOADED);
     }

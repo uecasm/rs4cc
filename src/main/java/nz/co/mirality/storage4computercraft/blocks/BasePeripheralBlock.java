@@ -15,17 +15,17 @@ public abstract class BasePeripheralBlock extends Block {
     public static final BooleanProperty CONNECTED = BooleanProperty.create("connected");
 
     public BasePeripheralBlock() {
-        super(AbstractBlock.Properties.create(Material.IRON)
-                .hardnessAndResistance(2.2f, 11.f)
+        super(AbstractBlock.Properties.of(Material.METAL)
+                .strength(2.2f, 11.f)
                 .harvestTool(ToolType.PICKAXE).harvestLevel(0)
                 .sound(SoundType.METAL));
 
-        this.setDefaultState(this.getStateContainer().getBaseState().with(CONNECTED, false));
+        this.registerDefaultState(this.getStateDefinition().any().setValue(CONNECTED, false));
     }
 
     @Override
-    protected void fillStateContainer(@Nonnull StateContainer.Builder<Block, BlockState> builder) {
-        super.fillStateContainer(builder);
+    protected void createBlockStateDefinition(@Nonnull StateContainer.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
 
         builder.add(CONNECTED);
     }

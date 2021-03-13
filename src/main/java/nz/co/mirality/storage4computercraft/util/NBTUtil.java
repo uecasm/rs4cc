@@ -21,7 +21,7 @@ public class NBTUtil {
     @Nullable
     public static CompoundNBT fromText(@Nullable String json) {
         try {
-            return json == null ? null : JsonToNBT.getTagFromJson(json);
+            return json == null ? null : JsonToNBT.parseTag(json);
         } catch (CommandSyntaxException e) {
             RS4CC.LOGGER.error("Error parsing NBT text data", e);
             return null;

@@ -157,7 +157,7 @@ public class MEPeripheralGrid {
     @Nonnull
     private ItemStack getRepresentation() {
         ItemStack stack = new ItemStack(RS4CCRegistry.ME_PERIPHERAL_ITEM.get(), 1);
-        stack.setDisplayName(new TranslationTextComponent(stack.getTranslationKey() + ".ui"));
+        stack.setHoverName(new TranslationTextComponent(stack.getDescriptionId() + ".ui"));
         return stack;
     }
 

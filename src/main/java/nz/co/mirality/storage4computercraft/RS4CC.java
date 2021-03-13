@@ -77,11 +77,11 @@ public final class RS4CC {
         // arbitrarily added to it... so let's just add both peripherals to the
         // CC group instead.  (definitely no point in making a new group just for this)
 
-        for (ItemGroup group : ItemGroup.GROUPS) {
-            if (group.getPath().equals(CC_MOD_ID)) return group;
+        for (ItemGroup group : ItemGroup.TABS) {
+            if (group.getRecipeFolderName().equals(CC_MOD_ID)) return group;
         }
 
         // couldn't find it for some reason...
-        return ItemGroup.MISC;
+        return ItemGroup.TAB_MISC;
     }
 }

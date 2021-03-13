@@ -29,7 +29,7 @@ public class ModLoadedLootCondition implements ILootCondition {
     }
 
     @Override
-    public LootConditionType func_230419_b_() {
+    public LootConditionType getType() {
         return TYPE;
     }
 
@@ -42,7 +42,7 @@ public class ModLoadedLootCondition implements ILootCondition {
 
         @Nonnull
         public ModLoadedLootCondition deserialize(@Nonnull JsonObject json, @Nonnull JsonDeserializationContext context) {
-            return new ModLoadedLootCondition(JSONUtils.getString(json, "modid"));
+            return new ModLoadedLootCondition(JSONUtils.getAsString(json, "modid"));
         }
     }
 }

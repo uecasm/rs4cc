@@ -42,7 +42,7 @@ public final class RS4CCRegistry {
             = BLOCKS.register(RS4CC.RS_PERIPHERAL_ID, RSPeripheralBlock::new);
     public static final RegistryObject<BaseBlockItem> RS_PERIPHERAL_ITEM
             = ITEMS.register(RS4CC.RS_PERIPHERAL_ID,
-                () -> new BaseBlockItem(RS_PERIPHERAL_BLOCK.get(), new Item.Properties().group(RS4CC.GROUP.get())));
+                () -> new BaseBlockItem(RS_PERIPHERAL_BLOCK.get(), new Item.Properties().tab(RS4CC.GROUP.get())));
     public static final RegistryObject<TileEntityType<?>> RS_PERIPHERAL_TILE
             = TILES.register(RS4CC.RS_PERIPHERAL_ID, fakeable(() -> RS4CC.RS_API, IRefinedStorage::createPeripheral, RSFakeTile::new));
 
@@ -50,7 +50,7 @@ public final class RS4CCRegistry {
             = BLOCKS.register(RS4CC.ME_PERIPHERAL_ID, MEPeripheralBlock::new);
     public static final RegistryObject<BaseBlockItem> ME_PERIPHERAL_ITEM
             = ITEMS.register(RS4CC.ME_PERIPHERAL_ID,
-            () -> new BaseBlockItem(ME_PERIPHERAL_BLOCK.get(), new Item.Properties().group(RS4CC.GROUP.get())));
+            () -> new BaseBlockItem(ME_PERIPHERAL_BLOCK.get(), new Item.Properties().tab(RS4CC.GROUP.get())));
     public static final RegistryObject<TileEntityType<?>> ME_PERIPHERAL_TILE
             = TILES.register(RS4CC.ME_PERIPHERAL_ID, fakeable(() -> RS4CC.ME_API, IAppliedEnergistics::createPeripheral, MEFakeTile::new));
 
@@ -58,7 +58,7 @@ public final class RS4CCRegistry {
     private static <A extends IStorageSystem> Supplier<TileEntityType<?>> fakeable(@Nonnull Supplier<A> storage, @Nonnull Function<A, Supplier<TileEntityType<?>>> real, @Nonnull Supplier<? extends TileEntity> fake) {
         return () -> storage.get() != null
                 ? real.apply(storage.get()).get()
-                : TileEntityType.Builder.create(fake).build(null);
+                : TileEntityType.Builder.of(fake).build(null);
     }
 
     private RS4CCRegistry() {}

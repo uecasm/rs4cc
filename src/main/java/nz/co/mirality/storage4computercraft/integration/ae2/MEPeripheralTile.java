@@ -75,34 +75,34 @@ public class MEPeripheralTile extends TileEntity implements IGridHost, ICrafting
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
 
-        remove();
+        setRemoved();
     }
 
     @Override
-    public void validate() {
-        super.validate();
+    public void clearRemoved() {
+        super.clearRemoved();
 
         this.grid.validate();
     }
 
     @Override
-    public void remove() {
+    public void setRemoved() {
         this.grid.remove();
 
-        super.remove();
+        super.setRemoved();
     }
 
     @Override
-    public void read(@Nonnull BlockState state, @Nonnull CompoundNBT nbt) {
-        super.read(state, nbt);
+    public void load(@Nonnull BlockState state, @Nonnull CompoundNBT nbt) {
+        super.load(state, nbt);
 
         this.grid.readFromNBT(nbt);
     }
 
     @Override
     @Nonnull
-    public CompoundNBT write(@Nonnull CompoundNBT compound) {
-        return this.grid.writeToNBT(super.write(compound));
+    public CompoundNBT save(@Nonnull CompoundNBT compound) {
+        return this.grid.writeToNBT(super.save(compound));
     }
 
     @MENetworkEventSubscribe
@@ -116,8 +116,8 @@ public class MEPeripheralTile extends TileEntity implements IGridHost, ICrafting
     }
 
     public void securityBreak() {
-        if (this.world != null) {
-            this.world.destroyBlock(this.pos, true);
+        if (this.level != null) {
+            this.level.destroyBlock(this.worldPosition, true);
         }
     }
 
@@ -148,7 +148,7 @@ public class MEPeripheralTile extends TileEntity implements IGridHost, ICrafting
 
     private boolean isDeferredUpdateRequested;
     public void updateStatus() {
-        if (this.world == null || this.world.isRemote() || this.isDeferredUpdateRequested) return;
+        if (this.level == null || this.level.isClientSide() || this.isDeferredUpdateRequested) return;
 
         this.isDeferredUpdateRequested = true;
         ServerWorker.add(() ->
@@ -158,15 +158,15 @@ public class MEPeripheralTile extends TileEntity implements IGridHost, ICrafting
             boolean online = this.grid.isOnline();
             boolean overloaded = this.grid.isOverloaded();
 
-            BlockState state = this.world.getBlockState(this.pos);
+            BlockState state = this.level.getBlockState(this.worldPosition);
             if (state.getBlock() == RS4CCRegistry.ME_PERIPHERAL_BLOCK.get()) {
-                boolean wasOnline = state.get(MEPeripheralBlock.CONNECTED);
-                boolean wasOverloaded = state.get(MEPeripheralBlock.OVERLOADED);
+                boolean wasOnline = state.getValue(MEPeripheralBlock.CONNECTED);
+                boolean wasOverloaded = state.getValue(MEPeripheralBlock.OVERLOADED);
 
                 if (wasOnline != online || wasOverloaded != overloaded) {
-                    this.world.setBlockState(this.pos, state
-                            .with(MEPeripheralBlock.CONNECTED, online)
-                            .with(MEPeripheralBlock.OVERLOADED, overloaded));
+                    this.level.setBlockAndUpdate(this.worldPosition, state
+                            .setValue(MEPeripheralBlock.CONNECTED, online)
+                            .setValue(MEPeripheralBlock.OVERLOADED, overloaded));
                 }
             }
         });
@@ -197,9 +197,9 @@ public class MEPeripheralTile extends TileEntity implements IGridHost, ICrafting
         data.add(fmt.labelAndInfo(fmt.label(fmt.translate(key + ".computers")),
                 fmt.fixed(String.valueOf(this.grid.getComputerCount()))));
         if (blockState != null) {
-            if (blockState.get(MEPeripheralBlock.OVERLOADED)) {
+            if (blockState.getValue(MEPeripheralBlock.OVERLOADED)) {
                 data.add(fmt.error(fmt.translate(key + ".network.overloaded")));
-            } else if (blockState.get(MEPeripheralBlock.CONNECTED)) {
+            } else if (blockState.getValue(MEPeripheralBlock.CONNECTED)) {
                 data.add(fmt.good(fmt.translate(key + ".network.connected")));
             } else {
                 data.add(fmt.warning(fmt.translate(key + ".network.disconnected")));

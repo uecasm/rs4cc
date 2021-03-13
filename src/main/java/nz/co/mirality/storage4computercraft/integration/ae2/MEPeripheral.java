@@ -259,7 +259,7 @@ public class MEPeripheral implements IPeripheral {
         final IStorageGrid storage = grid.getCache(IStorageGrid.class);
         final IMEMonitor<IAEFluidStack> inventory = storage.getInventory(getApi().getFluidStorageChannel());
 
-        if (tile.getWorld() == null) { return disconnected(); }
+        if (tile.getLevel() == null) { return disconnected(); }
 
         // First argument: the fluid stack to extract
         FluidStack stack = LuaConversion.getFluidStack(args.getTable(0), getApi().storedFluids(storage));
@@ -271,7 +271,7 @@ public class MEPeripheral implements IPeripheral {
         Direction direction = getDirection(args, 2);
 
         // Get the tile-entity on the specified side
-        TileEntity targetEntity = tile.getWorld().getTileEntity(tile.getPos().offset(direction));
+        TileEntity targetEntity = tile.getLevel().getBlockEntity(tile.getBlockPos().relative(direction));
         IFluidHandler handler = targetEntity != null ? targetEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).resolve().orElse(null) : null;
         if (handler == null) {
             return error("No tank on the given side");
@@ -392,7 +392,7 @@ public class MEPeripheral implements IPeripheral {
         final IStorageGrid storage = grid.getCache(IStorageGrid.class);
         final IMEMonitor<IAEItemStack> inventory = storage.getInventory(getApi().getItemStorageChannel());
 
-        if (tile.getWorld() == null) { return disconnected(); }
+        if (tile.getLevel() == null) { return disconnected(); }
 
         // First argument: the item stack to extract
         ItemStack stack = LuaConversion.getItemStack(args.getTable(0), getApi().storedItems(storage));
@@ -404,7 +404,7 @@ public class MEPeripheral implements IPeripheral {
         Direction direction = getDirection(args, 2);
 
         // Get the tile-entity on the specified side
-        TileEntity targetEntity = tile.getWorld().getTileEntity(tile.getPos().offset(direction));
+        TileEntity targetEntity = tile.getLevel().getBlockEntity(tile.getBlockPos().relative(direction));
         IItemHandler handler = targetEntity != null ? targetEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).resolve().orElse(null) : null;
         if (handler == null) {
             return error("No item container on the given side");
@@ -518,7 +518,7 @@ public class MEPeripheral implements IPeripheral {
         if (directionArg instanceof String) {
             return args.getEnum(index, Direction.class);
         } else if (directionArg != null) {
-            return Direction.byIndex(args.getInt(index));
+            return Direction.from3DDataValue(args.getInt(index));
         }
         return Direction.DOWN;
     }

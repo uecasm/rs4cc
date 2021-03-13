@@ -64,7 +64,7 @@ public class CraftingCallback implements ICraftingCallback, ILuaCallback {
             }
             count.ifPresent(aeItem::setStackSize);
 
-            crafting.beginCraftingJob(this.grid.getTile().getWorld(), grid, this.source, aeItem, this);
+            crafting.beginCraftingJob(this.grid.getTile().getLevel(), grid, this.source, aeItem, this);
             // the task continues in the background...
         } catch (LuaException e) {
             this.error = e;

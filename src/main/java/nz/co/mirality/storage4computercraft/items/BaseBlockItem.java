@@ -29,10 +29,10 @@ public class BaseBlockItem extends BlockItem {
     }
 
     @Override
-    protected boolean isInGroup(@Nonnull ItemGroup group) {
+    protected boolean allowdedIn(@Nonnull ItemGroup group) {
         if (!enabled) return false;
 
-        return super.isInGroup(group);
+        return super.allowdedIn(group);
     }
 
     @Override
@@ -42,17 +42,17 @@ public class BaseBlockItem extends BlockItem {
 
     @Override
     @Nonnull
-    public String getTranslationKey(@Nonnull final ItemStack stack) {
-        return this.blockType.getTranslationKey();
+    public String getDescriptionId(@Nonnull final ItemStack stack) {
+        return this.blockType.getDescriptionId();
     }
 
     @Override
     @Nonnull
-    public ActionResultType tryPlace(@Nonnull final BlockItemUseContext context) {
+    public ActionResultType place(@Nonnull final BlockItemUseContext context) {
         PlayerEntity player = context.getPlayer();
 
-        ActionResultType result = super.tryPlace(context);
-        if (!result.isSuccessOrConsume()) {
+        ActionResultType result = super.place(context);
+        if (!result.consumesAction()) {
             return result;
         }
 

@@ -68,7 +68,7 @@ public class RSPeripheralTile extends NetworkNodeTile<RSPeripheralNetworkNode> i
         data.add(fmt.labelAndInfo(fmt.label(fmt.translate(key + ".computers")),
                 fmt.fixed(String.valueOf(this.getNode().getComputerCount()))));
         if (blockState != null) {
-            if (blockState.get(RSPeripheralBlock.CONNECTED)) {
+            if (blockState.getValue(RSPeripheralBlock.CONNECTED)) {
                 data.add(fmt.good(fmt.translate(key + ".network.connected")));
             } else {
                 data.add(fmt.warning(fmt.translate(key + ".network.disconnected")));

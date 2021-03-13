@@ -46,7 +46,7 @@ public class RefinedStorage implements IRefinedStorage {
 
     @Override
     public Supplier<TileEntityType<?>> createPeripheral() {
-        return () -> TileEntityType.Builder.create(RSPeripheralTile::new).build(null);
+        return () -> TileEntityType.Builder.of(RSPeripheralTile::new).build(null);
     }
 
     public static IStorageSearcher<ItemStack> storedItems(INetwork network) {

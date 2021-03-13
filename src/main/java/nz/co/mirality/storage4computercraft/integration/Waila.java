@@ -42,7 +42,7 @@ public class Waila implements IWailaPlugin {
             ListNBT data = accessor.getServerData().getList("probedata", Constants.NBT.TAG_STRING);
             if (data != null) {
                 for (INBT item : data) {
-                    tooltip.add(ITextComponent.Serializer.getComponentFromJson(item.getString()));
+                    tooltip.add(ITextComponent.Serializer.fromJson(item.getAsString()));
                 }
             }
         }

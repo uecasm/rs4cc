@@ -48,7 +48,7 @@ public class RSPeripheralNetworkNode extends NetworkNode {
     @Override
     public ItemStack getItemStack() {
         ItemStack stack = super.getItemStack();
-        stack.setDisplayName(new TranslationTextComponent(stack.getTranslationKey() + ".ui"));
+        stack.setHoverName(new TranslationTextComponent(stack.getDescriptionId() + ".ui"));
         return stack;
     }
 
@@ -63,12 +63,12 @@ public class RSPeripheralNetworkNode extends NetworkNode {
         super.onConnectedStateChange(network, state, cause);
 
         BlockState blockState = this.world.getBlockState(this.pos);
-        if (blockState.getBlock().matchesBlock(RS4CCRegistry.RS_PERIPHERAL_BLOCK.get())) {
-            boolean wasOnline = blockState.get(RSPeripheralBlock.CONNECTED);
+        if (blockState.getBlock().is(RS4CCRegistry.RS_PERIPHERAL_BLOCK.get())) {
+            boolean wasOnline = blockState.getValue(RSPeripheralBlock.CONNECTED);
 
             if (wasOnline != state) {
-                this.world.setBlockState(this.pos, blockState
-                        .with(RSPeripheralBlock.CONNECTED, state));
+                this.world.setBlockAndUpdate(this.pos, blockState
+                        .setValue(RSPeripheralBlock.CONNECTED, state));
             }
         }
     }

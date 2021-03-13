@@ -48,7 +48,7 @@ public class AppliedEnergistics implements IAppliedEnergistics, IAEAddon {
 
     @Override
     public Supplier<TileEntityType<?>> createPeripheral() {
-        return () -> TileEntityType.Builder.create(MEPeripheralTile::new).build(null);
+        return () -> TileEntityType.Builder.of(MEPeripheralTile::new).build(null);
     }
 
     @Nonnull
@@ -137,7 +137,7 @@ public class AppliedEnergistics implements IAppliedEnergistics, IAEAddon {
             IItemList<IAEItemStack> list = this.sup.get();
             for (IAEItemStack aeStack : list) {
                 if (isInteresting(aeStack) && aeStack.getItem().equals(definition.getItem())) {
-                    if (!matchTags || ItemStack.areItemStackTagsEqual(definition, aeStack.getDefinition())) {
+                    if (!matchTags || ItemStack.tagMatches(definition, aeStack.getDefinition())) {
                         return getItemStack(aeStack);
                     }
                 }
@@ -206,7 +206,7 @@ public class AppliedEnergistics implements IAppliedEnergistics, IAEAddon {
         public FluidStack findFirst(@Nonnull FluidStack definition, boolean matchTags) {
             IItemList<IAEFluidStack> list = this.sup.get();
             for (IAEFluidStack aeStack : list) {
-                if (isInteresting(aeStack) && aeStack.getFluid().isEquivalentTo(definition.getFluid())) {
+                if (isInteresting(aeStack) && aeStack.getFluid().isSame(definition.getFluid())) {
                     if (!matchTags || FluidStack.areFluidStackTagsEqual(definition, aeStack.getFluidStack())) {
                         return getFluidStack(aeStack);
                     }
@@ -221,7 +221,7 @@ public class AppliedEnergistics implements IAppliedEnergistics, IAEAddon {
             IItemList<IAEFluidStack> list = this.sup.get();
             List<FluidStack> result = new ArrayList<>();
             for (IAEFluidStack aeStack : list) {
-                if (isInteresting(aeStack) && aeStack.getFluid().isEquivalentTo(definition.getFluid())) {
+                if (isInteresting(aeStack) && aeStack.getFluid().isSame(definition.getFluid())) {
                     result.add(getFluidStack(aeStack));
                 }
             }
@@ -233,7 +233,7 @@ public class AppliedEnergistics implements IAppliedEnergistics, IAEAddon {
         public CompoundNBT findMatchingTagByHash(@Nonnull FluidStack definition, @Nonnull String nbtHash) {
             IItemList<IAEFluidStack> list = this.sup.get();
             for (IAEFluidStack aeStack : list) {
-                if (isInteresting(aeStack) && aeStack.getFluid().isEquivalentTo(definition.getFluid())) {
+                if (isInteresting(aeStack) && aeStack.getFluid().isSame(definition.getFluid())) {
                     CompoundNBT tag = getFluidStack(aeStack).getTag();
                     String hash = NBTUtil.toHash(tag);
                     if (nbtHash.equals(hash)) {

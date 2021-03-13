@@ -21,7 +21,7 @@ public class ProbeInfoProvider implements IProbeInfoProvider {
 
     @Override
     public void addProbeInfo(ProbeMode probeMode, IProbeInfo probe, PlayerEntity playerEntity, World world, BlockState blockState, IProbeHitData data) {
-        final TileEntity tile = world.getTileEntity(data.getPos());
+        final TileEntity tile = world.getBlockEntity(data.getPos());
 
         if (tile instanceof IProbeable) {
             for (ITextComponent datum : ((IProbeable) tile).getProbeData(blockState, new ProbeFormatting())) {
