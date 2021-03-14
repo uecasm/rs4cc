@@ -23,6 +23,7 @@ group = 'mirality'
 archivesBaseName = "Storage4ComputerCraft-${minecraft_version}"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(8) // Mojang ships Java 8 to end users, so your mod should target Java 8.
+compileJava.options.encoding = 'UTF-8'
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
@@ -38,7 +39,8 @@ minecraft {
             //property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.markers', ''
             property 'forge.logging.console.level', 'debug'
-            //property 'mixin.env.disableRefMap', 'true'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             mods {
                 storage4computercraft {
@@ -52,7 +54,8 @@ minecraft {
 
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
-            //property 'mixin.env.disableRefMap', 'true'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             mods {
                 storage4computercraft {
@@ -66,7 +69,8 @@ minecraft {
 
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
-            //property 'mixin.env.disableRefMap', 'true'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             args '--mod', 'storage4computercraft', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
@@ -150,19 +154,19 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    compile "org.squiddev:cc-tweaked-${minecraft_version}:${cc_version}"
+    compile fg.deobf("org.squiddev:cc-tweaked-${cc_version}")
 
-    compileOnly "com.refinedmods:refinedstorage:${rs_version}"
-    compileOnly "appeng:appliedenergistics2:${ae2_version}:api"
-    compileOnly "mcjty.theoneprobe:TheOneProbe-${top_version}:api"
-    compileOnly "mcp.mobius.waila:Hwyla:${hwyla_version}:api"
+    compileOnly fg.deobf("com.refinedmods:refinedstorage:${rs_version}")
+    compileOnly (fg.deobf("appeng:appliedenergistics2:${ae2_version}:api") { transitive = false })
+    compileOnly fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}:api")
+    compileOnly fg.deobf("mcp.mobius.waila:Hwyla:${hwyla_version}:api")
 
     // these are separate so we can test without them loaded
-    runtimeOnly "com.refinedmods:refinedstorage:${rs_version}"
-    runtimeOnly "appeng:appliedenergistics2:${ae2_version}"
-    runtimeOnly "mcjty.theoneprobe:TheOneProbe-${top_version}"
-    runtimeOnly "mcp.mobius.waila:Hwyla:${hwyla_version}"
-    runtimeOnly "mezz.jei:jei-${minecraft_version}:${jei_version}"
+    runtimeOnly fg.deobf("com.refinedmods:refinedstorage:${rs_version}")
+    runtimeOnly (fg.deobf("appeng:appliedenergistics2:${ae2_version}") { transitive = false })
+    runtimeOnly fg.deobf("mcjty.theoneprobe:TheOneProbe-${top_version}")
+    runtimeOnly fg.deobf("mcp.mobius.waila:Hwyla:${hwyla_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${jei_version}")
 
     // extra mods for testing
     for (mod in fileTree(dir: extraModsDir, include: '*.jar')) {
@@ -171,8 +175,11 @@ dependencies {
         assert sep != -1
         def name = basename.substring(0, sep)
         def version = basename.substring(sep + 1)
-        runtimeOnly "extra-mods:$name:$version"
+        runtimeOnly fg.deobf("extra-mods:$name:$version")
     }
+
+    annotationProcessor 'org.spongepowered:mixin:0.8.2:processor'
+    testAnnotationProcessor 'org.spongepowered:mixin:0.8.2:processor'
 }
 
 jar {
