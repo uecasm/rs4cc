@@ -28,6 +28,7 @@ import nz.co.mirality.storage4computercraft.RS4CCRegistry;
 import nz.co.mirality.storage4computercraft.blocks.MEPeripheralBlock;
 import nz.co.mirality.storage4computercraft.integration.IProbeFormatting;
 import nz.co.mirality.storage4computercraft.integration.IProbeable;
+import nz.co.mirality.storage4computercraft.util.Platform;
 import nz.co.mirality.storage4computercraft.util.ServerWorker;
 
 import javax.annotation.Nonnull;
@@ -41,8 +42,14 @@ public class MEPeripheralTile extends TileEntity implements IGridHost, ICrafting
     public MEPeripheralTile() {
         super(RS4CCRegistry.ME_PERIPHERAL_TILE.get());
 
-        this.grid = new MEPeripheralGrid(this);
-        this.peripheral = new MEPeripheral(this.grid);
+        if (Platform.isServer()) {
+            // grids are server-side only
+            this.grid = new MEPeripheralGrid(this);
+            this.peripheral = new MEPeripheral(this.grid);
+        } else {
+            this.grid = null;
+            this.peripheral = null;
+        }
     }
 
     private final MEPeripheralGrid grid;
@@ -82,12 +89,16 @@ public class MEPeripheralTile extends TileEntity implements IGridHost, ICrafting
     public void clearRemoved() {
         super.clearRemoved();
 
-        this.grid.validate();
+        if (this.grid != null) {
+            this.grid.validate();
+        }
     }
 
     @Override
     public void setRemoved() {
-        this.grid.remove();
+        if (this.grid != null) {
+            this.grid.remove();
+        }
 
         super.setRemoved();
     }
@@ -96,13 +107,21 @@ public class MEPeripheralTile extends TileEntity implements IGridHost, ICrafting
     public void load(@Nonnull BlockState state, @Nonnull CompoundNBT nbt) {
         super.load(state, nbt);
 
-        this.grid.readFromNBT(nbt);
+        if (this.grid != null) {
+            this.grid.readFromNBT(nbt);
+        }
     }
 
     @Override
     @Nonnull
     public CompoundNBT save(@Nonnull CompoundNBT compound) {
-        return this.grid.writeToNBT(super.save(compound));
+        compound = super.save(compound);
+
+        if (this.grid != null) {
+            compound = this.grid.writeToNBT(compound);
+        }
+
+        return compound;
     }
 
     @MENetworkEventSubscribe
@@ -143,7 +162,7 @@ public class MEPeripheralTile extends TileEntity implements IGridHost, ICrafting
     @Nullable
     @Override
     public IGridNode getActionableNode() {
-        return this.grid.getGridNode();
+        return this.grid != null ? this.grid.getGridNode() : null;
     }
 
     private boolean isDeferredUpdateRequested;
@@ -175,7 +194,7 @@ public class MEPeripheralTile extends TileEntity implements IGridHost, ICrafting
     @Nullable
     @Override
     public IGridNode getGridNode(@Nonnull AEPartLocation aePartLocation) {
-        return this.grid.getGridNode();
+        return this.grid != null ? this.grid.getGridNode() : null;
     }
 
     @Nonnull
@@ -194,6 +213,11 @@ public class MEPeripheralTile extends TileEntity implements IGridHost, ICrafting
     public List<ITextComponent> getProbeData(@Nullable BlockState blockState, @Nonnull IProbeFormatting fmt) {
         final String key = "probe." + RS4CC.ID;
         List<ITextComponent> data = new ArrayList<>();
+
+        if (this.grid == null) {
+            return data;
+        }
+
         data.add(fmt.labelAndInfo(fmt.label(fmt.translate(key + ".computers")),
                 fmt.fixed(String.valueOf(this.grid.getComputerCount()))));
         if (blockState != null) {
